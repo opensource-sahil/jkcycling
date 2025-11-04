@@ -1,26 +1,102 @@
 @import "tailwindcss";
 
+/* Site-wide design tokens */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --bg: #f8fafc;        /* light page background */
+  --surface: #ffffff;   /* card / surface background */
+  --text: #0f172a;      /* primary text (very dark) */
+  --muted: #475569;     /* secondary text */
+  --brand: #0ea5e9;     /* brand / link color (sky-500) */
+  --brand-600: #0284c7; /* darker brand */
+  --success: #16a34a;
+  --code-bg: #0f172a;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --bg: #071024;
+    --surface: #071a2a;
+    --text: #e6eef6;
+    --muted: #94a3b8;
+    --brand: #38bdf8;
+    --brand-600: #0ea5e9;
+    --success: #22c55e;
+    --code-bg: #0b1220;
   }
 }
 
+/* Theme tokens are set via CSS variables above. */
+
+html, body, #__next {
+  height: 100%;
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Headings and text */
+h1, h2, h3 {
+  color: var(--text);
+  line-height: 1.25;
+}
+
+p, label, input, select, textarea {
+  color: var(--text);
+}
+
+a {
+  color: var(--brand);
+}
+
+a:hover {
+  color: var(--brand-600);
+}
+
+/* Code and keyboard text */
+code, kbd, pre {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, 'Roboto Mono', 'Courier New', monospace;
+}
+
+code {
+  background: rgba(15,23,42,0.06);
+  padding: 0.125rem 0.25rem;
+  border-radius: 0.25rem;
+}
+
+pre {
+  background: var(--code-bg);
+  color: #fff;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  overflow: auto;
+}
+
+/* Utility: visually hidden but accessible */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Make form controls higher-contrast by default (in case Tailwind class missing) */
+input, select, textarea, button {
+  color: var(--text);
+}
+
+/* Strong focus ring for keyboard users */
+*:focus {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 3px rgba(14,165,233,0.18);
 }

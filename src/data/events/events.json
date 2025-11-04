@@ -1,0 +1,16 @@
+{
+  "events": [
+    {
+      "id": "2025-12-15-mtb-jammu",
+      "title": "MTB Jammu Winter Challenge",
+      "date": "2025-12-15",
+      "district": "Jammu",
+      "type": "MTB",
+      "description": "Join us for the exciting MTB Jammu Winter Challenge! Experience the thrill of mountain biking through scenic trails.",
+      "location": "Jammu Forest Trails",
+      "registrationUrl": "#",
+      "notice": "/notices/sample-notice.pdf",
+      "image": "/images/events/placeholder.jpg"
+    }
+  ]
+}
