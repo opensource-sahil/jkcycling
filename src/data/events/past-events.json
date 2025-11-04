@@ -1,0 +1,22 @@
+{
+  "events": [
+    {
+      "id": "2025-10-15-road-race-srinagar",
+      "title": "Srinagar Road Race Championship",
+      "date": "2025-10-15",
+      "district": "Srinagar",
+      "type": "Road",
+      "description": "The inaugural Srinagar Road Race Championship featuring elite cyclists from across J&K.",
+      "location": "Dal Lake Circuit",
+      "results": [
+        {
+          "position": 1,
+          "name": "Sample Winner",
+          "time": "2:15:30"
+        }
+      ],
+      "notice": "/notices/sample-results.pdf",
+      "image": "/images/events/placeholder.jpg"
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "subscribers": [
+    {
+      "id": "03100e4d-d5fe-417e-8547-932a3db5b558",
+      "email": "test@gmail.com",
+      "name": null,
+      "district": "Jammu",
+      "status": "confirmed",
+      "created_at": "2025-11-04T19:36:17.192Z",
+      "confirmed_at": "2025-11-04T19:36:40.435Z"
+    }
+  ]
+}
