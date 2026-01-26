@@ -1,0 +1,84 @@
+'use server';
+
+import { eventService } from "@/services/eventService";
+import { Event } from "@/types/event";
+import { revalidateTag } from "next/cache";
+import { requireAdmin } from "@/lib/auth-utils";
+import { redirect } from "next/navigation";
+
+export async function saveEventAction(prevState: any, formData: FormData) {
+  try {
+    await requireAdmin();
+
+    const id = formData.get("id") as string;
+    const isNew = !id;
+    
+    // Basic fields
+    const event: any = {
+      id: id || `${formData.get("date")}-${(formData.get("title") as string).toLowerCase().replace(/\s+/g, '-')}`,
+      title: formData.get("title") as string,
+      date: formData.get("date") as string,
+      district: formData.get("district") as string,
+      type: formData.get("type") as string,
+      description: formData.get("description") as string,
+      location: formData.get("location") as string,
+      image: formData.get("image") as string || '/images/events/placeholder.jpg',
+      status: formData.get("status") as string,
+      categories: (formData.get("categories") as string).split(',').map(s => s.trim()).filter(Boolean),
+    };
+
+    // Registration config
+    event.registration = {
+      isOpen: formData.get("reg_isOpen") === 'on',
+      url: formData.get("reg_url") as string,
+      fee: formData.get("reg_fee") as string,
+      deadline: formData.get("reg_deadline") as string,
+    };
+
+    // Organizer
+    event.organizer = {
+      name: formData.get("org_name") as string,
+      contact: {
+        name: formData.get("org_contact_name") as string,
+        phone: formData.get("org_contact_phone") as string,
+      }
+    };
+
+    // Audit
+    const now = new Date().toISOString();
+    event.audit = {
+      updatedAt: now,
+      updatedBy: 'admin', // In real app, get session user email
+      createdAt: isNew ? now : undefined, // Service should handle merging if partial update, but we are doing full replace
+    };
+
+    // If existing, we should probably fetch it first to preserve creation date, 
+    // but for now we'll just overwrite or assume the service handles partials (it does a Put, so it replaces).
+    // To be safe for "createdAt", we could fetch first. 
+    if (!isNew) {
+      const existing = await eventService.getEventById(id);
+      if (existing?.audit?.createdAt) {
+        event.audit.createdAt = existing.audit.createdAt;
+      } else {
+        event.audit.createdAt = now;
+      }
+    } else {
+        event.audit.createdAt = now;
+    }
+
+    await eventService.saveEvent(event as Event);
+    revalidateTag('events');
+    
+    return { success: true, message: "Event saved successfully!" };
+  } catch (error) {
+    console.error(error);
+    return { success: false, message: "Failed to save event." };
+  }
+}
+
+export async function deleteEventAction(id: string) {
+    await requireAdmin();
+    // Implementation of delete in service is missing, we need to add it.
+    // await eventService.deleteEvent(id);
+    // revalidateTag('events');
+}

@@ -1,59 +1,96 @@
-import pastEventsData from '@/data/events/past-events.json';
+import { eventService } from '@/services/eventService';
 import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { PastEvent, PastEventsData } from '@/types/event';
+import { Result } from '@/types/event';
 
 export async function generateStaticParams() {
-  const data = pastEventsData as PastEventsData;
-  return data.events.map((e) => ({ id: e.id }));
+  const events = await eventService.getPastEvents();
+  return events.map((e) => ({ id: e.id }));
+}
+
+// Helper to group results by category
+function groupResultsByCategory(results: Result[]) {
+  const groups: Record<string, Result[]> = {};
+  results.forEach(r => {
+    const cat = r.category || 'General';
+    if (!groups[cat]) groups[cat] = [];
+    groups[cat].push(r);
+  });
+  return groups;
 }
 
 export default async function ResultDetailPage({ params }: { params: { id: string } | Promise<{ id: string }> }) {
   const { id } = await params;
-  const data = pastEventsData as PastEventsData;
-  const event = data.events.find((e) => e.id === id) as PastEvent | undefined;
+  const event = await eventService.getEventById(id);
 
-  if (!event) return notFound();
+  if (!event || event.status !== 'COMPLETED' || !event.results) return notFound();
+
+  const groupedResults = groupResultsByCategory(event.results);
 
   return (
-    <main className="min-h-screen p-8" style={{ background: 'var(--bg)' }}>
-      <div className="max-w-4xl mx-auto rounded-lg shadow p-6" style={{ background: 'var(--surface)' }}>
-        <div className="relative h-64 w-full mb-6">
-          <Image src={event.image} alt={event.title} fill unoptimized className="object-cover rounded" />
+    <>
+      <div className="card" style={{ overflow: 'hidden', marginBottom: '32px' }}>
+        <div style={{ position: 'relative', width: '100%', height: '300px' }}>
+          <Image src={event.image} alt={event.title} fill unoptimized style={{ objectFit: 'cover' }} />
         </div>
-
-        <h1 className="text-3xl font-bold mb-2">{event.title}</h1>
-        <p className="text-sm mb-4" style={{ color: 'var(--muted)' }}>
-          {event.type} • {event.district} • {new Date(event.date).toLocaleDateString()}
-        </p>
-
-        <div className="mb-4">
-          <h3 className="font-semibold mb-2">Results</h3>
-          <div className="space-y-2">
-            {event.results.map((r, i) => (
-              <div key={i} className="flex justify-between items-center py-2 px-3 rounded" style={{ background: 'var(--bg)' }}>
-                <div className="font-medium" style={{ color: 'var(--text)' }}>#{r.position} — {r.name}</div>
-                <div style={{ color: 'var(--muted)' }}>{r.time}</div>
+        <div className="card-body">
+          <p className="text-muted" style={{ fontWeight: 600, textTransform: 'uppercase', marginBottom: '8px' }}>
+            {event.type} • {event.district} •{' '}
+            {new Date(event.date).toLocaleDateString('en-US', { dateStyle: 'long' })}
+          </p>
+          <h1>{event.title}</h1>
+          
+          <div style={{ marginTop: '32px' }}>
+            <h2 className="text-2xl font-bold mb-6">Top Results</h2>
+            
+            {Object.entries(groupedResults).map(([category, results]) => (
+              <div key={category} className="mb-8">
+                <h3 className="text-lg font-semibold mb-3 px-2 border-l-4 border-[var(--color-primary)] bg-gray-50 py-1">
+                  {category}
+                </h3>
+                <div style={{ display: 'grid', gap: '8px' }}>
+                  {results.sort((a, b) => a.position - b.position).map((r, i) => (
+                    <div key={i} className="flex justify-between items-center p-3 rounded-lg border border-gray-100 hover:bg-gray-50 transition-colors">
+                      <div className="flex items-center gap-4">
+                        <div className={`
+                          w-8 h-8 flex items-center justify-center rounded-full font-bold text-sm
+                          ${r.position === 1 ? 'bg-yellow-100 text-yellow-700' : 
+                            r.position === 2 ? 'bg-gray-200 text-gray-700' : 
+                            r.position === 3 ? 'bg-orange-100 text-orange-800' : 'bg-gray-100 text-gray-500'}
+                        `}>
+                          {r.position}
+                        </div>
+                        <div className="font-medium">
+                          {r.name}
+                          {r.team && <span className="text-sm text-gray-500 block">{r.team}</span>}
+                        </div>
+                      </div>
+                      <div className="font-mono text-lg">{r.time}</div>
+                    </div>
+                  ))}
+                </div>
               </div>
             ))}
           </div>
-        </div>
 
-        {event.notice && (
-          <p className="mb-4">
-            <a href={event.notice} target="_blank" rel="noopener noreferrer" className="hover:underline" style={{ color: 'var(--success)' }}>
-              Download Full Results
-            </a>
-          </p>
-        )}
-
-        <div className="mt-6">
-          <Link href="/results" className="hover:underline" style={{ color: 'var(--brand)' }}>
-            ← Back to results
-          </Link>
+          {event.notice && (
+            <div style={{ marginTop: '32px', textAlign: 'center' }}>
+              <a
+                href={event.notice}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn inline-block"
+              >
+                Download Full Results PDF
+              </a>
+            </div>
+          )}
         </div>
       </div>
-    </main>
+      <div>
+        <Link href="/results" className="btn" style={{ backgroundColor: 'transparent', color: 'var(--color-text)' }}>← Back to all results</Link>
+      </div>
+    </>
   );
 }

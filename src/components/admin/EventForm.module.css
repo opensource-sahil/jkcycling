@@ -1,0 +1,101 @@
+.formContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  max-width: 900px;
+}
+
+.section {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.sectionTitle {
+  font-size: 1.25rem;
+  font-weight: 700;
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: 0.75rem;
+  color: var(--color-text);
+}
+
+.grid2 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+
+.grid3 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .grid2 { grid-template-columns: 1fr 1fr; }
+  .grid3 { grid-template-columns: 1fr 1fr 1fr; }
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.input, .select, .textarea {
+  padding: 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-size: 1rem;
+  width: 100%;
+}
+
+.input:focus, .select:focus, .textarea:focus {
+  outline: 2px solid var(--color-primary);
+  border-color: transparent;
+}
+
+.checkboxWrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.submitBtn {
+  background-color: var(--color-primary);
+  color: white;
+  padding: 0.75rem 2rem;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.submitBtn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.submitBtn:hover:not(:disabled) {
+  opacity: 0.9;
+}

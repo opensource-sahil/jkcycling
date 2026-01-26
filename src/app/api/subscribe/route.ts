@@ -1,22 +1,7 @@
 import { NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
 import { randomUUID } from 'crypto';
-
-const DATA_FILE = path.resolve(process.cwd(), 'src', 'data', 'subscribers.json');
-
-function readStore() {
-  try {
-    const raw = fs.readFileSync(DATA_FILE, 'utf-8');
-    return JSON.parse(raw);
-  } catch (err) {
-    return { subscribers: [] };
-  }
-}
-
-function writeStore(data: any) {
-  fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2), 'utf-8');
-}
+import { subscriberService } from '@/services/subscriberService';
+import { Subscriber } from '@/types/event';
 
 export async function POST(request: Request) {
   const body = await request.json().catch(() => null);
@@ -29,34 +14,38 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'invalid email' }, { status: 400 });
   }
 
-  const store = readStore();
-  const existing = store.subscribers.find((s: any) => s.email === email);
-  if (existing) {
-    // If already confirmed, just return success; if pending, resend would be appropriate.
-    return NextResponse.json({ ok: true, message: 'already subscribed' });
+  try {
+    const existing = await subscriberService.getSubscriber(email);
+    if (existing) {
+      if (existing.status === 'confirmed') {
+        return NextResponse.json({ ok: true, message: 'already subscribed' });
+      }
+      // If pending, we could resend the token, but for now just return success
+      return NextResponse.json({ ok: true, message: 'subscription pending confirmation' });
+    }
+
+    const token = randomUUID();
+    const newSub: Subscriber = {
+      id: randomUUID(),
+      email,
+      name: body.name || undefined,
+      district: body.district || 'Unknown',
+      status: 'pending',
+      token,
+      createdAt: new Date().toISOString(),
+    };
+
+    await subscriberService.addSubscriber(newSub);
+
+    const base = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+    const confirmUrl = `${base}/api/confirm?token=${token}`;
+
+    // eslint-disable-next-line no-console
+    console.log('Confirmation URL:', confirmUrl);
+
+    return NextResponse.json({ ok: true, confirmUrl });
+  } catch (error) {
+    console.error('Subscription error:', error);
+    return NextResponse.json({ error: 'subscription failed' }, { status: 500 });
   }
-
-  const token = randomUUID();
-  const newSub = {
-    id: randomUUID(),
-    email,
-    name: body.name || null,
-    district: body.district || null,
-    status: 'pending',
-    token,
-    created_at: new Date().toISOString(),
-  };
-  store.subscribers.push(newSub);
-  writeStore(store);
-
-  // In a production implementation we'd send a real double-opt-in email here using SES.
-  // For now we return the confirmation link so you can test the flow locally.
-  const base = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
-  const confirmUrl = `${base}/api/confirm?token=${token}`;
-
-  // Log the confirmation URL for convenience (visible in server logs)
-  // eslint-disable-next-line no-console
-  console.log('Confirmation URL:', confirmUrl);
-
-  return NextResponse.json({ ok: true, confirmUrl });
 }

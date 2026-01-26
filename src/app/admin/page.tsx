@@ -1,194 +1,79 @@
-'use client';
+import { eventService } from "@/services/eventService";
+import { isAdmin } from "@/lib/auth-utils";
+import Link from "next/link";
+import styles from "@/components/admin/Admin.module.css";
 
-import { useState } from 'react';
-import { generateEventId } from '@/lib/utils';
+export const dynamic = 'force-dynamic';
 
-function downloadJSON(filename: string, content: string) {
-  const blob = new Blob([content], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  URL.revokeObjectURL(url);
-}
-
-export default function AdminPage() {
-  const [title, setTitle] = useState('');
-  const [date, setDate] = useState('');
-  const [district, setDistrict] = useState('');
-  const [type, setType] = useState<'MTB' | 'Road'>('MTB');
-  const [location, setLocation] = useState('');
-  const [description, setDescription] = useState('');
-  const [registrationUrl, setRegistrationUrl] = useState('');
-  const [notice, setNotice] = useState('');
-  const [image, setImage] = useState('/images/events/placeholder.jpg');
-  const [jsonOutput, setJsonOutput] = useState('');
-  const [copied, setCopied] = useState(false);
-
-  function handleGenerate(e: React.FormEvent) {
-    e.preventDefault();
-    const id = generateEventId(title || 'event', date || new Date().toISOString().slice(0,10));
-    const obj = {
-      id,
-      title,
-      date,
-      district,
-      type,
-      description,
-      location,
-      registrationUrl,
-      notice,
-      image,
-    };
-    const json = JSON.stringify(obj, null, 2);
-    setJsonOutput(json);
+export default async function AdminDashboard() {
+  const isAllowed = await isAdmin();
+  if (!isAllowed) {
+    return (
+      <div className={styles.container} style={{ textAlign: 'center' }}>
+        <h1 style={{ color: 'red', fontSize: '1.5rem', fontWeight: 'bold' }}>Access Denied</h1>
+        <p style={{ marginTop: '1rem', color: 'var(--color-text-secondary)' }}>You are not authorized to view this page.</p>
+        <Link href="/" className="btn btn-primary" style={{ marginTop: '2rem' }}>Go Home</Link>
+      </div>
+    );
   }
 
+  const upcoming = await eventService.getUpcomingEvents();
+  const past = await eventService.getPastEvents();
+  const allEvents = [...upcoming, ...past];
+
   return (
-    <main className="min-h-screen p-8" style={{ background: 'var(--bg)' }}>
-      <div className="max-w-3xl mx-auto rounded-lg shadow p-6" style={{ background: 'var(--surface)' }}>
-        <h1 className="text-2xl font-bold mb-4">Admin — Create event JSON</h1>
-
-        <form onSubmit={handleGenerate} className="space-y-4">
-          <div>
-            <label className="block text-sm font-semibold" style={{ color: 'var(--text)' }}>Title</label>
-            <input
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="mt-1 block w-full rounded px-3 py-2 border"
-              style={{ background: 'var(--surface)', color: 'var(--text)', borderColor: 'rgba(148,163,184,0.4)' }}
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-                <label className="block text-sm font-semibold" style={{ color: 'var(--text)' }}>Date</label>
-                <input
-                  value={date}
-                  onChange={(e) => setDate(e.target.value)}
-                  type="date"
-                  className="mt-1 block w-full rounded px-3 py-2 border"
-                  style={{ background: 'var(--surface)', color: 'var(--text)', borderColor: 'rgba(148,163,184,0.4)' }}
-                />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold" style={{ color: 'var(--text)' }}>District</label>
-              <input
-                value={district}
-                onChange={(e) => setDistrict(e.target.value)}
-                className="mt-1 block w-full rounded px-3 py-2 border"
-                style={{ background: 'var(--surface)', color: 'var(--text)', borderColor: 'rgba(148,163,184,0.4)' }}
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-semibold" style={{ color: 'var(--text)' }}>Type</label>
-              <select
-                value={type}
-                onChange={(e) => setType(e.target.value as 'MTB'|'Road')}
-                className="mt-1 block w-full rounded px-3 py-2 border"
-                style={{ background: 'var(--surface)', color: 'var(--text)', borderColor: 'rgba(148,163,184,0.4)' }}
-              >
-                <option value="MTB">MTB</option>
-                <option value="Road">Road</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-semibold" style={{ color: 'var(--text)' }}>Location</label>
-              <input
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-                className="mt-1 block w-full rounded px-3 py-2 border"
-                style={{ background: 'var(--surface)', color: 'var(--text)', borderColor: 'rgba(148,163,184,0.4)' }}
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold" style={{ color: 'var(--text)' }}>Description</label>
-            <textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="mt-1 block w-full rounded px-3 py-2 border"
-              style={{ background: 'var(--surface)', color: 'var(--text)', borderColor: 'rgba(148,163,184,0.4)' }}
-              rows={4}
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-semibold" style={{ color: 'var(--text)' }}>Registration URL</label>
-              <input
-                value={registrationUrl}
-                onChange={(e) => setRegistrationUrl(e.target.value)}
-                className="mt-1 block w-full rounded px-3 py-2 border"
-                style={{ background: 'var(--surface)', color: 'var(--text)', borderColor: 'rgba(148,163,184,0.4)' }}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold" style={{ color: 'var(--text)' }}>Notice URL</label>
-              <input
-                value={notice}
-                onChange={(e) => setNotice(e.target.value)}
-                className="mt-1 block w-full rounded px-3 py-2 border"
-                style={{ background: 'var(--surface)', color: 'var(--text)', borderColor: 'rgba(148,163,184,0.4)' }}
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold" style={{ color: 'var(--text)' }}>Image URL</label>
-            <input
-              value={image}
-              onChange={(e) => setImage(e.target.value)}
-              className="mt-1 block w-full rounded px-3 py-2 border"
-              style={{ background: 'var(--surface)', color: 'var(--text)', borderColor: 'rgba(148,163,184,0.4)' }}
-            />
-          </div>
-
-          <div className="flex gap-3">
-            <button type="submit" className="px-4 py-2 bg-blue-700 text-white rounded hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500">Generate JSON</button>
-            <button type="button" onClick={() => { setTitle(''); setDate(''); setDistrict(''); setType('MTB'); setLocation(''); setDescription(''); setRegistrationUrl(''); setNotice(''); setImage('/images/events/placeholder.jpg'); setJsonOutput(''); setCopied(false); }} className="px-4 py-2 border rounded" style={{ background: 'var(--surface)', color: 'var(--text)', borderColor: 'rgba(148,163,184,0.4)' }}>Reset</button>
-          </div>
-        </form>
-
-        {jsonOutput && (
-          <div className="mt-6">
-            <label className="block text-sm font-semibold" style={{ color: 'var(--text)' }}>Event JSON</label>
-            <textarea readOnly value={jsonOutput} className="mt-1 block w-full rounded border border-gray-300 bg-gray-900 text-white font-mono text-sm px-3 py-2" rows={10} />
-            <div className="flex gap-3 mt-3 items-center">
-              <button
-                onClick={async () => {
-                  try {
-                    await navigator.clipboard.writeText(jsonOutput);
-                    setCopied(true);
-                    setTimeout(() => setCopied(false), 2500);
-                  } catch (err) {
-                    // fallback: noop
-                  }
-                }}
-                className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
-                aria-pressed={copied}
-              >
-                {copied ? 'Copied ✓' : 'Copy JSON'}
-              </button>
-              <button onClick={() => downloadJSON('event.json', jsonOutput)} className="px-4 py-2 bg-gray-800 text-white rounded hover:bg-black focus:outline-none focus:ring-2 focus:ring-gray-700">Download .json</button>
-              <div role="status" aria-live="polite" className="sr-only">
-                {copied ? 'JSON copied to clipboard' : ''}
-              </div>
-            </div>
-
-            <p className="mt-3 text-sm" style={{ color: 'var(--muted)' }}>
-              Tip: Add the generated object to <code style={{ background: 'var(--surface)', padding: '0.125rem 0.25rem', borderRadius: 4 }}>src/data/events/events.json</code> or create a new file under that folder and open a PR to merge.
-            </p>
-          </div>
-        )}
+    <div className={styles.container}>
+      <div className={styles.header}>
+        <h1 className={styles.title}>Admin Dashboard</h1>
+        <Link href="/admin/events/new" className={styles.createBtn}>
+          + Create New Event
+        </Link>
       </div>
-    </main>
+
+      <div className={styles.tableContainer}>
+        <table className={styles.table}>
+          <thead>
+            <tr>
+              <th className={styles.th}>Date</th>
+              <th className={styles.th}>Title</th>
+              <th className={styles.th}>Type</th>
+              <th className={styles.th}>Status</th>
+              <th className={`${styles.th} text-right`}>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {allEvents.map(event => (
+              <tr key={event.id} className={styles.tr}>
+                <td className={styles.td} style={{ fontFamily: 'monospace' }}>{event.date}</td>
+                <td className={styles.td} style={{ fontWeight: 600 }}>{event.title}</td>
+                <td className={styles.td}>
+                  <span className={`${styles.badge} ${event.type === 'MTB' ? styles.badgeMTB : styles.badgeRoad}`}>
+                    {event.type}
+                  </span>
+                </td>
+                <td className={styles.td}>
+                  <span className={`${styles.badge} ${
+                    event.status === 'UPCOMING' ? styles.badgeUpcoming : 
+                    event.status === 'COMPLETED' ? styles.badgeCompleted : styles.badgeDraft
+                  }`}>
+                    {event.status}
+                  </span>
+                </td>
+                <td className={styles.td} style={{ textAlign: 'right' }}>
+                  <Link href={`/admin/events/${event.id}`} className={styles.actionLink}>
+                    Edit
+                  </Link>
+                </td>
+              </tr>
+            ))}
+            {allEvents.length === 0 && (
+              <tr>
+                <td colSpan={5} className={styles.emptyState}>No events found.</td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
   );
 }

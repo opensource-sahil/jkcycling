@@ -1,0 +1,102 @@
+.container {
+  padding: 3rem 1rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.createBtn {
+  background-color: var(--color-primary);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  text-decoration: none;
+  transition: background-color 0.2s;
+}
+
+.createBtn:hover {
+  background-color: var(--color-primary-dark);
+}
+
+.tableContainer {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.th {
+  background-color: var(--color-bg-secondary);
+  padding: 1rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.td {
+  padding: 1rem;
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text);
+}
+
+.tr:last-child .td {
+  border-bottom: none;
+}
+
+.tr:hover {
+  background-color: var(--color-bg-secondary);
+}
+
+.badge {
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.badgeMTB { background-color: #ffedd5; color: #c2410c; } /* Orange */
+.badgeRoad { background-color: #dbeafe; color: #1d4ed8; } /* Blue */
+
+.badgeUpcoming { background-color: #dcfce7; color: #15803d; } /* Green */
+.badgeCompleted { background-color: #f3f4f6; color: #374151; } /* Gray */
+.badgeDraft { background-color: #fef9c3; color: #854d0e; } /* Yellow */
+
+.actionLink {
+  color: var(--color-primary);
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-decoration: none;
+}
+.actionLink:hover {
+  text-decoration: underline;
+}
+
+.emptyState {
+  padding: 3rem;
+  text-align: center;
+  color: var(--color-text-secondary);
+}

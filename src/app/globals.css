@@ -1,102 +1,112 @@
-@import "tailwindcss";
-
-/* Site-wide design tokens */
 :root {
-  --bg: #f8fafc;        /* light page background */
-  --surface: #ffffff;   /* card / surface background */
-  --text: #0f172a;      /* primary text (very dark) */
-  --muted: #475569;     /* secondary text */
-  --brand: #0ea5e9;     /* brand / link color (sky-500) */
-  --brand-600: #0284c7; /* darker brand */
-  --success: #16a34a;
-  --code-bg: #0f172a;
+  /* Brand Colors */
+  --color-primary: #0070f3;
+  --color-primary-dark: #0761d1;
+  --color-accent: #f5a623;
+  --color-success: #10b981;
+  
+  /* Neutral Colors */
+  --color-bg: #ffffff;
+  --color-bg-secondary: #f3f4f6;
+  --color-surface: #ffffff;
+  --color-text: #111827;
+  --color-text-secondary: #4b5563;
+  --color-border: #e5e7eb;
+
+  /* Layout & Spacing */
+  --max-width: 1200px;
+  --header-height: 70px;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 16px;
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+
+  /* Fonts */
+  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  
+  --header-bg: rgba(255, 255, 255, 0.85);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #071024;
-    --surface: #071a2a;
-    --text: #e6eef6;
-    --muted: #94a3b8;
-    --brand: #38bdf8;
-    --brand-600: #0ea5e9;
-    --success: #22c55e;
-    --code-bg: #0b1220;
-  }
+:root[class~="dark"] {
+  --color-primary: #3b82f6;
+  --color-primary-dark: #60a5fa;
+  --color-accent: #fbbf24;
+  
+  --color-bg: #0f172a;
+  --color-bg-secondary: #1e293b;
+  --color-surface: #1e293b;
+  --color-text: #f8fafc;
+  --color-text-secondary: #94a3b8;
+  --color-border: #334155;
+  
+  --header-bg: rgba(15, 23, 42, 0.85);
+  
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
 }
 
-/* Theme tokens are set via CSS variables above. */
+:root[class~="light"] {
+  --header-bg: rgba(255, 255, 255, 0.85);
+}
 
-html, body, #__next {
-  height: 100%;
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
 body {
-  background-color: var(--bg);
-  color: var(--text);
-  font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  line-height: 1.6;
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-/* Headings and text */
-h1, h2, h3 {
-  color: var(--text);
-  line-height: 1.25;
-}
-
-p, label, input, select, textarea {
-  color: var(--text);
 }
 
 a {
-  color: var(--brand);
+  color: inherit;
+  text-decoration: none;
+  transition: color 0.2s ease;
 }
 
-a:hover {
-  color: var(--brand-600);
+.container {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0 1.5rem;
 }
 
-/* Code and keyboard text */
-code, kbd, pre {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, 'Roboto Mono', 'Courier New', monospace;
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.5rem;
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 1rem;
 }
 
-code {
-  background: rgba(15,23,42,0.06);
-  padding: 0.125rem 0.25rem;
-  border-radius: 0.25rem;
+.btn-primary {
+  background-color: var(--color-primary);
+  color: white;
+}
+.btn-primary:hover {
+  background-color: var(--color-primary-dark);
+  transform: translateY(-1px);
 }
 
-pre {
-  background: var(--code-bg);
-  color: #fff;
-  padding: 1rem;
-  border-radius: 0.5rem;
-  overflow: auto;
+.btn-outline {
+  background-color: transparent;
+  border: 2px solid var(--color-primary);
+  color: var(--color-primary);
 }
-
-/* Utility: visually hidden but accessible */
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
-}
-
-/* Make form controls higher-contrast by default (in case Tailwind class missing) */
-input, select, textarea, button {
-  color: var(--text);
-}
-
-/* Strong focus ring for keyboard users */
-*:focus {
-  outline: 2px solid transparent;
-  outline-offset: 2px;
-  box-shadow: 0 0 0 3px rgba(14,165,233,0.18);
+.btn-outline:hover {
+  background-color: var(--color-primary);
+  color: white;
 }

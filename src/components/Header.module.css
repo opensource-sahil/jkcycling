@@ -1,0 +1,117 @@
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background-color: var(--header-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--color-border);
+  height: var(--header-height);
+  display: flex;
+  align-items: center;
+  transition: transform 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.hidden {
+  transform: translateY(-100%);
+}
+
+.navContainer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-weight: 800;
+  font-size: 1.5rem;
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.logoIcon {
+  color: var(--color-primary);
+}
+
+.navLinks {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.link {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--color-text-secondary);
+  position: relative;
+  padding: 0.5rem 0;
+}
+
+.link:hover, .linkActive {
+  color: var(--color-primary);
+}
+
+/* Subtle underline animation */
+.link::after {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 2px;
+  bottom: 0;
+  left: 0;
+  background-color: var(--color-primary);
+  transition: width 0.3s ease;
+  border-radius: 2px;
+}
+
+.link:hover::after {
+  width: 100%;
+}
+
+.userContainer {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 2px solid var(--color-border);
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.avatar:hover {
+  border-color: var(--color-primary);
+}
+
+.signInBtn {
+  font-size: 0.9rem;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-md);
+  background-color: var(--color-primary);
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.2s ease;
+}
+
+.signInBtn:hover {
+  background-color: var(--color-primary-dark);
+}
+
+@media (max-width: 640px) {
+  .logoText {
+    display: none;
+  }
+  .navLinks {
+    gap: 1rem;
+  }
+}

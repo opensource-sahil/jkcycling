@@ -1,25 +1,24 @@
-import { PastEventsData } from '@/types/event';
-import ResultCard from '@/components/ResultCard';
-import pastEventsData from '@/data/events/past-events.json';
+import { eventService } from '@/services/eventService';
+import { ResultCard } from '@/components/ResultCard';
 
-export default function ResultsPage() {
+export const revalidate = 3600;
+
+export default async function ResultsPage() {
+  const pastEvents = await eventService.getPastEvents();
+
   return (
-    <main className="min-h-screen p-8" style={{ background: 'var(--bg)' }}>
-      <div className="max-w-7xl mx-auto">
-        <h1 className="text-4xl font-bold text-center mb-12" style={{ color: 'var(--text)' }}>
-          Past Events & Results
-        </h1>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {(pastEventsData as PastEventsData).events.map((event) => (
-            <ResultCard key={event.id} event={event} />
+    <main className="container py-8">
+      <div>
+        <h1 className="text-3xl font-bold mb-8">Past Events & Results</h1>
+        <div className="grid gap-6">
+          {pastEvents.map((event) => (
+            <ResultCard key={event.id} event={event as any} />
           ))}
         </div>
-
-        {(pastEventsData as PastEventsData).events.length === 0 && (
-          <p className="text-center text-lg" style={{ color: 'var(--muted)' }}>
-            No past events to display yet.
-          </p>
+        {pastEvents.length === 0 && (
+          <div className="text-center py-12 bg-gray-50 rounded-lg">
+            <p className="text-gray-500">No past events to display yet.</p>
+          </div>
         )}
       </div>
     </main>

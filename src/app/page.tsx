@@ -1,33 +1,39 @@
-import { EventsData } from '@/types/event';
+import { eventService } from '@/services/eventService';
 import EventCard from '@/components/EventCard';
-import eventsData from '@/data/events/events.json';
 import SubscribeForm from '@/components/SubscribeForm';
+import Hero from '@/components/Hero';
 
-export default function Home() {
+export const revalidate = 3600; // revalidate at most every hour
+
+export default async function Home() {
+  const events = await eventService.getUpcomingEvents();
+
   return (
-    <main className="min-h-screen p-8" style={{ background: 'var(--bg)' }}>
-      <div className="max-w-7xl mx-auto">
-        <h1 className="text-4xl font-bold text-center mb-12" style={{ color: 'var(--text)' }}>
-          Cycling Events in Jammu & Kashmir
-        </h1>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {(eventsData as EventsData).events.map((event) => (
-            <EventCard key={event.id} event={event} />
-          ))}
-        </div>
-
-        <section className="mt-12">
-          <h2 className="text-2xl font-semibold text-center mb-4" style={{ color: 'var(--text)' }}>Subscribe for event updates</h2>
-          <SubscribeForm />
+    <>
+      <Hero />
+      <div className="container" style={{ paddingBottom: '4rem' }}>
+        <section style={{ margin: '4rem 0' }}>
+          <div className="flex justify-between items-center" style={{ marginBottom: '2rem' }}>
+            <h2 id="events" style={{ fontSize: '2rem' }}>Upcoming Events</h2>
+          </div>
+          
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem' }}>
+            {events.map((event) => (
+              <EventCard key={event.id} event={event} />
+            ))}
+          </div>
+          
+          {events.length === 0 && (
+            <div style={{ padding: '3rem', textAlign: 'center', backgroundColor: 'var(--color-bg-secondary)', borderRadius: 'var(--radius-md)' }}>
+              <p style={{ fontSize: '1.1rem', color: 'var(--color-text-secondary)' }}>No upcoming events scheduled. Stay tuned!</p>
+            </div>
+          )}
         </section>
 
-        {(eventsData as EventsData).events.length === 0 && (
-          <p className="text-center text-lg" style={{ color: 'var(--muted)' }}>
-            No upcoming events at the moment. Check back soon!
-          </p>
-        )}
+        <section style={{ marginTop: '4rem', maxWidth: '600px', margin: '4rem auto 0' }}>
+          <SubscribeForm />
+        </section>
       </div>
-    </main>
+    </>
   );
 }

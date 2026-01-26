@@ -1,0 +1,56 @@
+.container {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 2.5rem;
+  max-width: 600px;
+  margin: 0 auto;
+  box-shadow: var(--shadow-sm);
+  text-align: center;
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  color: var(--color-text);
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.input, .select {
+  padding: 0.875rem 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: 1rem;
+  width: 100%;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.input:focus, .select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(0, 112, 243, 0.1);
+}
+
+.message {
+  margin-top: 1rem;
+  padding: 0.75rem;
+  border-radius: var(--radius-md);
+  background-color: var(--color-bg-secondary);
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+}
+
+.button {
+  width: 100%;
+  padding: 1rem;
+  font-size: 1.05rem;
+}
