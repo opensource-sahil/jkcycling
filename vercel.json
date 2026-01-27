@@ -1,9 +1,8 @@
 {
-  "version": 2,
-  "builds": [
-    { "src": "package.json", "use": "@vercel/next" }
-  ],
-  "routes": [
-    { "src": "/(.*)", "dest": "/$1" }
-  ]
+  "git": {
+    "deploymentEnabled": {
+      "main": true
+    }
+  },
+  "ignoreCommand": "git diff HEAD^ HEAD --quiet -- . || git diff HEAD^ HEAD --name-only | grep -E '\\.(md|txt)$'"
 }
