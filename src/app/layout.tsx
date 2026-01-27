@@ -5,8 +5,20 @@ import Footer from "@/components/Footer";
 import { Providers } from "./providers";
 
 export const metadata: Metadata = {
-  title: "JK Cycling - Cycling Events in Jammu & Kashmir",
+  metadataBase: new URL('https://jkcycling.com'),
+  title: {
+    default: "JK Cycling - Cycling Events in Jammu & Kashmir",
+    template: "%s | JK Cycling"
+  },
   description: "Discover cycling events, races, and community in Jammu & Kashmir. Your hub for MTB and road cycling events.",
+  openGraph: {
+    title: "JK Cycling",
+    description: "Cycling Events and Results in J&K",
+    url: 'https://jkcycling.com',
+    siteName: 'JK Cycling',
+    locale: 'en_US',
+    type: 'website',
+  },
 };
 
 export default function RootLayout({

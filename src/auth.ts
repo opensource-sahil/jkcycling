@@ -2,7 +2,7 @@ import NextAuth from "next-auth"
 import Google from "next-auth/providers/google"
 import { DynamoDBAdapter } from "@auth/dynamodb-adapter"
 import { DynamoDBDocument } from "@aws-sdk/lib-dynamodb"
-import { client, TABLE_AUTH } from "@/lib/dynamodb"
+import { client, TABLE_AUTH, TABLE_AUTH_INDEX } from "@/lib/dynamodb"
 
 const docClient = DynamoDBDocument.from(client, {
   marshallOptions: {
@@ -14,10 +14,12 @@ const docClient = DynamoDBDocument.from(client, {
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: DynamoDBAdapter(docClient, {
-    tableName: "dev-jk-cycling-auth",
-    indexName: "dev-jk-cycling-auth-gsi",
-    indexPartitionKey: "gsi-pk",
-    indexSortKey: "gsi-sk",
+    tableName: TABLE_AUTH || "dev-jk-cycling-auth",
+    indexName: TABLE_AUTH_INDEX || "dev-jk-cycling-auth-gsi",
+    partitionKey: "pk",
+    sortKey: "sk",
+    indexPartitionKey: "gsi1pk",
+    indexSortKey: "gsi1sk",
   }),
   providers: [Google],
   callbacks: {
