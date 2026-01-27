@@ -5,6 +5,7 @@ import { unstable_cache } from "next/cache";
 
 // Raw database operations (Internal)
 const fetchUpcomingEvents = async (): Promise<Event[]> => {
+  console.log("Fetching upcoming events from DynamoDB...");
   const command = new ScanCommand({
     TableName: TABLE_EVENTS,
     FilterExpression: "#s = :status",
@@ -13,10 +14,13 @@ const fetchUpcomingEvents = async (): Promise<Event[]> => {
   });
 
   const response = await db.send(command);
-  return (response.Items as Event[] || []).sort((a, b) => a.date.localeCompare(b.date));
+  const items = (response.Items as Event[] || []).sort((a, b) => a.date.localeCompare(b.date));
+  console.log(`Fetched ${items.length} upcoming events.`);
+  return items;
 };
 
 const fetchPastEvents = async (): Promise<Event[]> => {
+  console.log("Fetching past events from DynamoDB...");
   const command = new ScanCommand({
     TableName: TABLE_EVENTS,
     FilterExpression: "#s = :status",
@@ -25,17 +29,22 @@ const fetchPastEvents = async (): Promise<Event[]> => {
   });
 
   const response = await db.send(command);
-  return (response.Items as Event[] || []).sort((a, b) => b.date.localeCompare(a.date));
+  const items = (response.Items as Event[] || []).sort((a, b) => b.date.localeCompare(a.date));
+  console.log(`Fetched ${items.length} past events.`);
+  return items;
 };
 
 const fetchEventById = async (id: string): Promise<Event | null> => {
+  console.log(`Fetching event by ID: ${id}`);
   const command = new GetCommand({
     TableName: TABLE_EVENTS,
     Key: { id },
   });
 
   const response = await db.send(command);
-  return (response.Item as Event) || null;
+  const item = (response.Item as Event) || null;
+  console.log(`Event fetched: ${item ? 'Found' : 'Not Found'}`);
+  return item;
 };
 
 // Cached Service
@@ -72,6 +81,7 @@ export const eventService = {
    * Note: In a real admin dashboard, calling this should also revalidate tags.
    */
   async saveEvent(event: Event): Promise<void> {
+    console.log(`Saving event: ${event.id}`);
     const command = new PutCommand({
       TableName: TABLE_EVENTS,
       Item: {
@@ -81,17 +91,20 @@ export const eventService = {
     });
 
     await db.send(command);
+    console.log(`Event saved successfully: ${event.id}`);
   },
 
   /**
    * Delete an event by ID.
    */
   async deleteEvent(id: string): Promise<void> {
+    console.log(`Deleting event: ${id}`);
     const { DeleteCommand } = await import("@aws-sdk/lib-dynamodb");
     const command = new DeleteCommand({
       TableName: TABLE_EVENTS,
       Key: { id },
     });
     await db.send(command);
+    console.log(`Event deleted: ${id}`);
   }
 };

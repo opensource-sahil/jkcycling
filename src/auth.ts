@@ -12,10 +12,17 @@ const docClient = DynamoDBDocument.from(client, {
   },
 })
 
+// DEBUG: Print configuration to Vercel Logs
+const config = {
+  tableName: TABLE_AUTH || "dev-jk-cycling-auth",
+  indexName: TABLE_AUTH_INDEX || "dev-jk-cycling-auth-gsi",
+};
+console.log("--> AUTH DYNAMO CONFIG:", JSON.stringify(config, null, 2));
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: DynamoDBAdapter(docClient, {
-    tableName: TABLE_AUTH || "dev-jk-cycling-auth",
-    indexName: TABLE_AUTH_INDEX || "dev-jk-cycling-auth-gsi",
+    tableName: config.tableName,
+    indexName: config.indexName,
     partitionKey: "pk",
     sortKey: "sk",
     indexPartitionKey: "gsi1pk",

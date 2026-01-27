@@ -7,10 +7,12 @@ import { requireAdmin } from "@/lib/auth-utils";
 
 export async function saveEventAction(prevState: unknown, formData: FormData) {
   try {
+    console.log("Admin Action: Saving Event...");
     await requireAdmin();
 
     const id = formData.get("id") as string;
     const isNew = !id;
+    console.log(`Event ID: ${id || 'NEW'}, Title: ${formData.get("title")}`);
     
     // Basic fields
     const event: Partial<Event> = {
