@@ -25,8 +25,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     indexName: config.indexName,
     partitionKey: "pk",
     sortKey: "sk",
-    indexPartitionKey: "gsi1pk",
-    indexSortKey: "gsi1sk",
+    indexPartitionKey: "gsi-pk",
+    indexSortKey: "gsi-sk",
   }),
   providers: [Google],
   callbacks: {
