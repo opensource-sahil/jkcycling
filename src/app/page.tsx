@@ -1,5 +1,5 @@
 import { eventService } from '@/services/eventService';
-import EventCard from '@/components/EventCard';
+import EventsList from '@/components/EventsList';
 import SubscribeForm from '@/components/SubscribeForm';
 import Hero from '@/components/Hero';
 
@@ -13,15 +13,11 @@ export default async function Home() {
       <Hero />
       <div className="container" style={{ paddingBottom: '4rem' }}>
         <section style={{ margin: '4rem 0' }}>
-          <div className="flex justify-between items-center" style={{ marginBottom: '2rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem' }}>
             <h2 id="events" style={{ fontSize: '2rem' }}>Upcoming Events</h2>
           </div>
           
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem' }}>
-            {events.map((event) => (
-              <EventCard key={event.id} event={event} />
-            ))}
-          </div>
+          <EventsList initialEvents={events} />
           
           {events.length === 0 && (
             <div style={{ padding: '3rem', textAlign: 'center', backgroundColor: 'var(--color-bg-secondary)', borderRadius: 'var(--radius-md)' }}>

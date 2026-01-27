@@ -10,7 +10,7 @@ export default async function ResultsPage() {
     <main className="container py-8">
       <div>
         <h1 className="text-3xl font-bold mb-8">Past Events & Results</h1>
-        <div className="grid gap-6">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
           {pastEvents.map((event) => (
             <ResultCard key={event.id} event={event} />
           ))}

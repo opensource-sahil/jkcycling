@@ -2,6 +2,7 @@ import { eventService } from '@/services/eventService';
 import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import styles from './EventDetail.module.css';
 
 export async function generateStaticParams() {
   const events = await eventService.getUpcomingEvents();
@@ -19,29 +20,29 @@ export default async function EventPage({ params }: { params: { id: string } | P
 
   return (
     <>
-      <div className="card" style={{ overflow: 'hidden', marginBottom: '32px' }}>
-        <div style={{ position: 'relative', width: '100%', height: '400px' }}>
+      <div className={styles.card}>
+        <div className={styles.imageWrapper}>
           <Image src={event.image} alt={event.title} fill unoptimized style={{ objectFit: 'cover' }} />
         </div>
-        <div className="card-body">
-          <p className="text-muted" style={{ fontWeight: 600, textTransform: 'uppercase', marginBottom: '8px' }}>
+        <div className={styles.cardBody}>
+          <p className={styles.meta}>
             {event.type} • {event.district} •{' '}
             {new Date(event.date).toLocaleDateString('en-US', { dateStyle: 'long' })}
           </p>
-          <h1>{event.title}</h1>
-          <p style={{ margin: '16px 0', lineHeight: 1.7 }}>{event.description}</p>
+          <h1 className={styles.title}>{event.title}</h1>
+          <p className={styles.description}>{event.description}</p>
 
-          <div className="flex flex-col md:flex-row" style={{ gap: '32px', marginTop: '32px', borderTop: '1px solid var(--color-border)', paddingTop: '24px' }}>
+          <div className={styles.columns}>
             
             {/* Left Column: Details */}
-            <div className="flex-1">
-              <h3 className="text-xl font-bold mb-4">Event Details</h3>
+            <div className={styles.column}>
+              <h3 className={styles.sectionTitle}>Event Details</h3>
               
               <div className="mb-4">
                 <strong>Categories:</strong>
-                <div className="flex flex-wrap gap-2 mt-2">
+                <div className={styles.tagContainer}>
                   {event.categories?.map(cat => (
-                    <span key={cat} style={{ background: 'var(--color-bg-secondary)', padding: '4px 8px', borderRadius: '4px', fontSize: '0.9rem' }}>
+                    <span key={cat} className={styles.tag}>
                       {cat}
                     </span>
                   ))}
@@ -53,7 +54,7 @@ export default async function EventPage({ params }: { params: { id: string } | P
               </p>
               
               {event.organizer?.contact && (
-                 <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-100">
+                 <div className={styles.organizerBox}>
                    <strong>Organizer Contact:</strong>
                    <p>{event.organizer.name}</p>
                    {event.organizer.contact.name && <p className="text-sm text-gray-600">{event.organizer.contact.name} ({event.organizer.contact.role})</p>}
@@ -63,8 +64,8 @@ export default async function EventPage({ params }: { params: { id: string } | P
             </div>
 
             {/* Right Column: Actions */}
-            <div className="flex-1">
-              <h3 className="text-xl font-bold mb-4">Registration</h3>
+            <div className={styles.column}>
+              <h3 className={styles.sectionTitle}>Registration</h3>
               
               {event.registration?.deadline && (
                 <p className="mb-4 text-sm">

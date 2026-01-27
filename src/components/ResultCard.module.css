@@ -94,10 +94,12 @@
   .card {
     flex-direction: row;
     height: auto;
-    min-height: 280px;
+    min-height: 220px;
   }
   .imageWrapper {
-    width: 35%;
+    width: 300px;
+    min-width: 300px;
     height: auto;
+    min-height: 220px;
   }
 }
