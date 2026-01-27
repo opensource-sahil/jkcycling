@@ -1,12 +1,12 @@
 'use client';
 
 import Image from 'next/image';
-import { PastEvent } from '@/types/event';
+import { Event } from '@/types/event';
 import { Button } from './ui/Button';
 import styles from './ResultCard.module.css';
 
 interface ResultCardProps {
-  event: PastEvent;
+  event: Event;
 }
 
 export function ResultCard({ event }: ResultCardProps) {
@@ -30,12 +30,15 @@ export function ResultCard({ event }: ResultCardProps) {
         
         <h4 className={styles.resultsTitle}>Top Results</h4>
         <div className={styles.resultsList}>
-          {event.results.slice(0, 3).map((result, index) => (
+          {event.results?.slice(0, 3).map((result, index) => (
             <div key={index} className={styles.resultItem}>
               <span className={styles.position}>#{result.position} {result.name}</span>
               <span className={styles.time}>{result.time}</span>
             </div>
           ))}
+          {(!event.results || event.results.length === 0) && (
+            <p className="text-sm text-gray-500 italic">Results pending...</p>
+          )}
         </div>
         
         {event.notice && (

@@ -1,12 +1,11 @@
 'use server';
 
 import { eventService } from "@/services/eventService";
-import { Event } from "@/types/event";
+import { Event, EventStatus, EventType } from "@/types/event";
 import { revalidateTag } from "next/cache";
 import { requireAdmin } from "@/lib/auth-utils";
-import { redirect } from "next/navigation";
 
-export async function saveEventAction(prevState: any, formData: FormData) {
+export async function saveEventAction(prevState: unknown, formData: FormData) {
   try {
     await requireAdmin();
 
@@ -14,16 +13,16 @@ export async function saveEventAction(prevState: any, formData: FormData) {
     const isNew = !id;
     
     // Basic fields
-    const event: any = {
+    const event: Partial<Event> = {
       id: id || `${formData.get("date")}-${(formData.get("title") as string).toLowerCase().replace(/\s+/g, '-')}`,
       title: formData.get("title") as string,
       date: formData.get("date") as string,
       district: formData.get("district") as string,
-      type: formData.get("type") as string,
+      type: formData.get("type") as EventType, 
       description: formData.get("description") as string,
       location: formData.get("location") as string,
       image: formData.get("image") as string || '/images/events/placeholder.jpg',
-      status: formData.get("status") as string,
+      status: formData.get("status") as EventStatus,
       categories: (formData.get("categories") as string).split(',').map(s => s.trim()).filter(Boolean),
     };
 
@@ -49,7 +48,7 @@ export async function saveEventAction(prevState: any, formData: FormData) {
     event.audit = {
       updatedAt: now,
       updatedBy: 'admin', // In real app, get session user email
-      createdAt: isNew ? now : undefined, // Service should handle merging if partial update, but we are doing full replace
+      createdAt: now, // Default to now, will be overwritten if existing
     };
 
     // If existing, we should probably fetch it first to preserve creation date, 
@@ -59,15 +58,11 @@ export async function saveEventAction(prevState: any, formData: FormData) {
       const existing = await eventService.getEventById(id);
       if (existing?.audit?.createdAt) {
         event.audit.createdAt = existing.audit.createdAt;
-      } else {
-        event.audit.createdAt = now;
       }
-    } else {
-        event.audit.createdAt = now;
     }
 
     await eventService.saveEvent(event as Event);
-    revalidateTag('events');
+    revalidateTag('events', 'default');
     
     return { success: true, message: "Event saved successfully!" };
   } catch (error) {
@@ -80,5 +75,5 @@ export async function deleteEventAction(id: string) {
     await requireAdmin();
     // Implementation of delete in service is missing, we need to add it.
     // await eventService.deleteEvent(id);
-    // revalidateTag('events');
+    // revalidateTag('events', 'default');
 }

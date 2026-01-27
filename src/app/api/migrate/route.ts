@@ -101,7 +101,7 @@ export async function GET() {
           email: s.email,
           name: s.name || undefined,
           district: s.district || 'Unknown',
-          status: s.status as any,
+          status: s.status as Subscriber['status'],
           createdAt: s.created_at || new Date().toISOString(),
           confirmedAt: s.confirmed_at || undefined,
         };

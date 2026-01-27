@@ -12,7 +12,7 @@ export default async function ResultsPage() {
         <h1 className="text-3xl font-bold mb-8">Past Events & Results</h1>
         <div className="grid gap-6">
           {pastEvents.map((event) => (
-            <ResultCard key={event.id} event={event as any} />
+            <ResultCard key={event.id} event={event} />
           ))}
         </div>
         {pastEvents.length === 0 && (

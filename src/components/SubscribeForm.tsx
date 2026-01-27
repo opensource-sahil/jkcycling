@@ -29,8 +29,8 @@ export default function SubscribeForm() {
       setEmail('');
       setName('');
       setDistrict('');
-    } catch (err: any) {
-      setMessage(err.message || 'Error subscribing');
+    } catch (err) {
+      setMessage(err instanceof Error ? err.message : 'Error subscribing');
     } finally {
       setLoading(false);
     }
