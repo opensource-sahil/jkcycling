@@ -37,7 +37,6 @@ export default function EventForm({ event }: { event?: Event }) {
 
     setIsUploading(true);
     try {
-      console.log("Getting signed URL for:", file.name, file.type);
       // 1. Get Presigned URL
       const res = await fetch('/api/upload', {
         method: 'POST',
@@ -46,10 +45,8 @@ export default function EventForm({ event }: { event?: Event }) {
       
       if (!res.ok) throw new Error('Failed to get upload URL');
       const { signedUrl, publicUrl } = await res.json();
-      console.log("Signed URL:", signedUrl);
 
       // 2. Upload to S3
-      console.log("Uploading to S3...");
       const uploadRes = await fetch(signedUrl, {
         method: 'PUT',
         body: file,
@@ -60,13 +57,12 @@ export default function EventForm({ event }: { event?: Event }) {
         console.error("S3 Upload Failed:", uploadRes.status, uploadRes.statusText);
         throw new Error(`Upload failed: ${uploadRes.statusText}`);
       }
-      console.log("Upload success!");
 
       // 3. Update State
       setImageUrl(publicUrl);
     } catch (err) {
-      console.error("Full Upload Error:", err);
-      alert("Error uploading image (Check Console)");
+      console.error("Upload Error:", err);
+      alert("Error uploading image");
     } finally {
       setIsUploading(false);
     }
