@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import styles from './SubscribeForm.module.css';
+import { JK_DISTRICTS } from '@/types/event';
 
 export default function SubscribeForm() {
   const [email, setEmail] = useState('');
@@ -22,10 +23,9 @@ export default function SubscribeForm() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error || 'Request failed');
-      setMessage('Check console/server logs for a local confirmation link (dev).');
-      if (data.confirmUrl) {
-        setMessage(`Confirmation URL (dev): ${data.confirmUrl}`);
-      }
+      
+      setMessage(data.message || 'Check your email for a confirmation link!');
+      
       setEmail('');
       setName('');
       setDistrict('');
@@ -61,9 +61,9 @@ export default function SubscribeForm() {
           className={styles.select}
         >
           <option value="">Select your District (optional)</option>
-          <option>Jammu</option>
-          <option>Srinagar</option>
-          <option>Budgam</option>
+          {JK_DISTRICTS.map((d) => (
+            <option key={d} value={d}>{d}</option>
+          ))}
         </select>
       </div>
       <button type="submit" disabled={loading} className={`btn btn-primary ${styles.button}`}>

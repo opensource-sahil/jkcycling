@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { randomUUID } from 'crypto';
 import { subscriberService } from '@/services/subscriberService';
 import { Subscriber } from '@/types/event';
+import { sendEmail } from '@/lib/email';
 
 export async function POST(request: Request) {
   const body = await request.json().catch(() => null);
@@ -20,7 +21,6 @@ export async function POST(request: Request) {
       if (existing.status === 'confirmed') {
         return NextResponse.json({ ok: true, message: 'already subscribed' });
       }
-      // If pending, we could resend the token, but for now just return success
       return NextResponse.json({ ok: true, message: 'subscription pending confirmation' });
     }
 
@@ -37,13 +37,41 @@ export async function POST(request: Request) {
 
     await subscriberService.addSubscriber(newSub);
 
-    const base = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+    const base = process.env.NEXT_PUBLIC_SITE_URL || 'https://jkcycling.com';
     const confirmUrl = `${base}/api/confirm?token=${token}`;
 
-    // eslint-disable-next-line no-console
-    console.log('Confirmation URL:', confirmUrl);
+    console.log('Sending Confirmation Email to:', email);
+    
+    // Send Email via Resend
+    const emailResult = await sendEmail({
+      to: email,
+      subject: 'Confirm your subscription to JK Cycling',
+      html: `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2>Welcome to JK Cycling! 🚴</h2>
+          <p>Hi ${body.name || 'there'},</p>
+          <p>Thanks for subscribing to our newsletter. Please click the link below to confirm your email address:</p>
+          <p style="margin: 24px 0;">
+            <a href="${confirmUrl}" style="background-color: #0070f3; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold;">
+              Confirm Subscription
+            </a>
+          </p>
+          <p style="font-size: 14px; color: #666;">If you didn't request this, you can safely ignore this email.</p>
+        </div>
+      `
+    });
 
-    return NextResponse.json({ ok: true, confirmUrl });
+    if (!emailResult.success) {
+      // Don't fail the request, just log it. The user can try again or we can retry.
+      console.error("Failed to send email", emailResult.error);
+    }
+
+    // In dev mode, still log URL for convenience
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Confirmation URL (Dev):', confirmUrl);
+    }
+
+    return NextResponse.json({ ok: true, message: 'Confirmation email sent!' });
   } catch (error) {
     console.error('Subscription error:', error);
     return NextResponse.json({ error: 'subscription failed' }, { status: 500 });

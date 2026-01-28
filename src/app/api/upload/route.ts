@@ -19,10 +19,11 @@ export async function POST(request: Request) {
     const key = `events/${randomUUID()}-${filename.replace(/\s+/g, '-')}`;
 
     // 3. Create the command
+    console.log("Generating Presigned URL for:", { Bucket: BUCKET_NAME, Key: key });
     const command = new PutObjectCommand({
       Bucket: BUCKET_NAME,
       Key: key,
-      ContentType: filetype,
+      // ContentType: filetype, // REMOVED to debug CORS/Signature
     });
 
     // 4. Generate Presigned URL (valid for 60 seconds)
