@@ -10,6 +10,19 @@ const nextConfig: NextConfig = {
         port: '',
         pathname: '/**',
       },
+      // Allow S3 and CloudFront
+      {
+        protocol: 'https',
+        hostname: '*.amazonaws.com',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.cloudfront.net',
+        port: '',
+        pathname: '/**',
+      }
     ],
   },
   async headers() {

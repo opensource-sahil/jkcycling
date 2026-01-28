@@ -19,20 +19,24 @@ export async function POST(request: Request) {
     const key = `events/${randomUUID()}-${filename.replace(/\s+/g, '-')}`;
 
     // 3. Create the command
-    console.log("Generating Presigned URL for:", { Bucket: BUCKET_NAME, Key: key });
+    console.log("Generating Presigned URL for:", { Bucket: BUCKET_NAME, Key: key, ContentType: filetype });
     const command = new PutObjectCommand({
       Bucket: BUCKET_NAME,
       Key: key,
-      // ContentType: filetype, // REMOVED to debug CORS/Signature
+      ContentType: filetype,
     });
 
     // 4. Generate Presigned URL (valid for 60 seconds)
     const signedUrl = await getSignedUrl(s3Client, command, { expiresIn: 60 });
     
-    // 5. Construct the final public URL (assuming public read access or CloudFront)
-    // If not using CloudFront, standard S3 URL is: https://BUCKET.s3.REGION.amazonaws.com/KEY
+    // 5. Construct the final public URL
+    // If CloudFront is configured, use it. Otherwise fall back to S3 (which requires public bucket).
+    const cfDomain = process.env.NEXT_PUBLIC_CLOUDFRONT_DOMAIN;
     const region = process.env.AWS_REGION || 'ap-south-1';
-    const publicUrl = `https://${BUCKET_NAME}.s3.${region}.amazonaws.com/${key}`;
+    
+    const publicUrl = cfDomain 
+      ? `https://${cfDomain}/${key}`
+      : `https://${BUCKET_NAME}.s3.${region}.amazonaws.com/${key}`;
 
     return NextResponse.json({ signedUrl, publicUrl });
   } catch (error) {

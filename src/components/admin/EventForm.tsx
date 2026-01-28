@@ -53,7 +53,7 @@ export default function EventForm({ event }: { event?: Event }) {
       const uploadRes = await fetch(signedUrl, {
         method: 'PUT',
         body: file,
-        // headers: { 'Content-Type': file.type }, // REMOVED
+        headers: { 'Content-Type': file.type },
       });
 
       if (!uploadRes.ok) {
