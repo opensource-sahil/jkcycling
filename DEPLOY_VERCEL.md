@@ -18,6 +18,7 @@ prerendering.
 | `AWS_REGION` | e.g. `ap-south-1` |
 | `DYNAMODB_TABLE_EVENTS` | Events table name |
 | `DYNAMODB_TABLE_SUBSCRIBERS` | Subscribers table name |
+| `DYNAMODB_TABLE_GROUPS` | Ride groups table name |
 | `DYNAMODB_TABLE_AUTH` | Auth.js adapter table |
 | `DYNAMODB_TABLE_AUTH_INDEX` | Auth.js adapter GSI |
 | `AUTH_SECRET` | Auth.js session encryption |
@@ -91,6 +92,7 @@ vercel --prod
 | Symptom | Likely cause |
 | --- | --- |
 | Build fails while prerendering | Missing or wrong AWS credentials; the build reads DynamoDB |
+| `/groups` renders empty with a warning in the log | `DYNAMODB_TABLE_GROUPS` unset, or the table does not exist. Reads degrade to an empty directory by design; writes will fail |
 | Push produced no deployment | `ignoreCommand` skipped it, or the Production branch is not the one you pushed |
 | Signed in but "Access Denied" at `/admin` | Address absent from `ADMIN_EMAILS` |
 | Sign-in redirect error | Redirect URI not registered for that origin |

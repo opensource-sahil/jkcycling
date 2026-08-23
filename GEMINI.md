@@ -36,12 +36,18 @@ database. **That is no longer true.** All reads and writes go through the
 service layer in `src/services/`. The remaining files under `src/data/` are
 dead seed data and should not be treated as a source of truth.
 
-Three tables, named by environment variable:
+Four tables, named by environment variable:
 
 - `DYNAMODB_TABLE_EVENTS` — events, partition key `id`
 - `DYNAMODB_TABLE_SUBSCRIBERS` — subscribers, partition key `email`
+- `DYNAMODB_TABLE_GROUPS` — ride groups, partition key `id`
 - `DYNAMODB_TABLE_AUTH` (+ `DYNAMODB_TABLE_AUTH_INDEX`) — owned by the
   Auth.js DynamoDB adapter; do not write to it directly
+
+`rideGroupService` treats a missing or unconfigured groups table as an empty
+directory so the site still builds and serves, and logs a warning. That
+tolerance is deliberate and specific to reads of an additive feature; do not
+copy it to events or subscribers, and writes still fail loudly.
 
 ### Access layers
 
@@ -56,9 +62,10 @@ throws on any `undefined` attribute, and events carry optional fields.
 
 ### Caching
 
-Read paths are wrapped in `unstable_cache` with the `events` tag and a 1-hour
-revalidate. **Any write must call `revalidateTag('events', 'default')`** or the
-change stays invisible for up to an hour.
+Read paths are wrapped in `unstable_cache` with a 1-hour revalidate, tagged
+`events` or `ride-groups`. **Any write must revalidate its tag** — e.g.
+`revalidateTag('events', 'default')` — or the change stays invisible for up to
+an hour.
 
 ### Auth and admin access
 
@@ -82,8 +89,10 @@ src/
     events/[id]/          Event detail
     results/              Results list
     results/[id]/         Per-event results (renders for any COMPLETED event)
+    groups/               Public ride group directory, grouped by district
     donate/
     admin/                Dashboard, event create/edit, server actions
+    admin/groups/         Ride group list, create/edit, server actions
     api/
       auth/[...nextauth]/ Auth.js handlers
       subscribe/          POST — double opt-in signup
@@ -92,13 +101,14 @@ src/
       upload/             POST — presigned S3 upload URL (admin only)
     sitemap.ts robots.ts globals.css layout.tsx providers.tsx
   components/
-    admin/                EventForm, PodiumEditor, Notify/Delete buttons
+    admin/                EventForm, RideGroupForm, PodiumEditor, buttons
     ui/                   Button, Card, Container
     *.tsx + *.module.css  One CSS module per component
-  services/               eventService, subscriberService
+  services/               eventService, subscriberService, rideGroupService
   lib/                    dynamodb, s3, email, announcement, auth-utils,
-                          event-form, utils
+                          event-form, ride-group-form, action-result, utils
   types/event.ts          Event, Result, Subscriber, districts, categories
+  types/ride-group.ts     RideGroup, paces, disciplines
 public/                   Static assets
 ```
 
@@ -125,8 +135,12 @@ four global classes — `.container`, `.btn`, `.btn-primary`, `.btn-outline` —
 plus the CSS custom properties.
 
 Any `className` like `text-2xl`, `bg-gray-50`, or `flex items-center` is
-**dead markup that styles nothing.** Roughly 51 such occurrences still exist
-across 8 files and are a known outstanding bug; do not add more.
+**dead markup that styles nothing.** The codebase had ~51 such classes and they
+have all been removed; do not reintroduce them. `.btn` supplies only shape, so
+it always needs `btn-primary` or `btn-outline` alongside it.
+
+The root layout owns the single `<main>` and the page container. Pages should
+not add either.
 
 Write styling as:
 
@@ -187,7 +201,7 @@ build` reads from the real DynamoDB tables, so it needs valid AWS credentials.
 ```
 AWS_ACCESS_KEY_ID  AWS_SECRET_ACCESS_KEY  AWS_REGION
 AUTH_SECRET  AUTH_GOOGLE_ID  AUTH_GOOGLE_SECRET
-DYNAMODB_TABLE_EVENTS  DYNAMODB_TABLE_SUBSCRIBERS
+DYNAMODB_TABLE_EVENTS  DYNAMODB_TABLE_SUBSCRIBERS  DYNAMODB_TABLE_GROUPS
 DYNAMODB_TABLE_AUTH  DYNAMODB_TABLE_AUTH_INDEX
 ADMIN_EMAILS  S3_BUCKET_NAME  RESEND_API_KEY
 NEXT_PUBLIC_CLOUDFRONT_DOMAIN  NEXT_PUBLIC_SITE_URL
@@ -220,10 +234,10 @@ Done:
 - [x] Events, results, and admin CRUD on DynamoDB
 - [x] Google admin auth, S3/CloudFront uploads
 - [x] Subscriptions with double opt-in, announcements, unsubscribe
+- [x] Replaced the dead Tailwind classes with CSS Modules
+- [x] Ride Groups directory with admin CRUD
 
 Outstanding:
-- [ ] **Replace the 51 dead Tailwind classes with real CSS** (user-visible)
-- [ ] **Ride Groups:** directory of local clubs (WhatsApp/Strava links)
 - [ ] **Routes:** GPX/Strava route integration
 - [ ] **Blog:** Markdown articles
 - [ ] **Training:** guides, plans, nutrition
