@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
+import { randomUUID } from 'crypto';
 import { subscriberService } from '@/services/subscriberService';
 import { sendEmail } from '@/lib/email';
+import { escapeHtml } from '@/lib/announcement';
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
@@ -15,6 +17,8 @@ export async function GET(request: Request) {
     sub.confirmedAt = new Date().toISOString();
     // remove token so it can't be reused
     delete sub.token;
+    // Older records predate this field; every bulk email needs one.
+    sub.unsubscribeToken = sub.unsubscribeToken || randomUUID();
 
     await subscriberService.addSubscriber(sub);
 
@@ -25,7 +29,7 @@ export async function GET(request: Request) {
       html: `
         <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
           <h2>You are now subscribed!</h2>
-          <p>Hi ${sub.name || 'Cycling Enthusiast'},</p>
+          <p>Hi ${escapeHtml(sub.name || 'Cycling Enthusiast')},</p>
           <p>Your subscription to JK Cycling updates has been confirmed.</p>
           <p>We'll keep you posted on upcoming MTB and Road races in Jammu & Kashmir.</p>
           <br/>
