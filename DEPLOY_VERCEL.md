@@ -1,91 +1,99 @@
-Deploying the JK Cycling site to Vercel
+# Deployment
 
-This document covers quick steps to get the site live on Vercel and how to configure environment variables and a custom domain.
+The site is hosted on Vercel and deploys from git. AWS (DynamoDB + S3) and
+Resend are provisioned separately and reached with credentials held in Vercel's
+environment variables.
 
-Prerequisites
+## Environment variables
 
-- Git repository for this project. If your code is local only, push it to GitHub first.
-- A Vercel account (free tier is sufficient for this site).
-- (Optional) Domain (e.g., jkcycling.com) and access to its DNS.
+Every key below must exist in the Vercel project for **both** Production and
+Preview, and in `.env.local` for development. A missing AWS credential fails
+the build outright, because `npm run build` reads the events table while
+prerendering.
 
-1) Push repository to GitHub
+| Variable | Purpose |
+| --- | --- |
+| `AWS_ACCESS_KEY_ID` | IAM user with DynamoDB + S3 access |
+| `AWS_SECRET_ACCESS_KEY` | " |
+| `AWS_REGION` | e.g. `ap-south-1` |
+| `DYNAMODB_TABLE_EVENTS` | Events table name |
+| `DYNAMODB_TABLE_SUBSCRIBERS` | Subscribers table name |
+| `DYNAMODB_TABLE_AUTH` | Auth.js adapter table |
+| `DYNAMODB_TABLE_AUTH_INDEX` | Auth.js adapter GSI |
+| `AUTH_SECRET` | Auth.js session encryption |
+| `AUTH_GOOGLE_ID` | Google OAuth client |
+| `AUTH_GOOGLE_SECRET` | " |
+| `ADMIN_EMAILS` | Comma-separated admin allowlist |
+| `S3_BUCKET_NAME` | Bucket for posters and PDFs |
+| `NEXT_PUBLIC_CLOUDFRONT_DOMAIN` | CDN domain serving that bucket |
+| `RESEND_API_KEY` | Transactional email |
+| `NEXT_PUBLIC_SITE_URL` | Base URL for confirmation/unsubscribe links |
 
-If you haven't already pushed this repository to GitHub, do this first. From PowerShell in `D:\jkcycling`:
+Two that bite when wrong:
 
-```powershell
-git init
-git add .
-git commit -m "initial jkcycling site"
-# replace <owner>/<repo> with your GitHub repo
-git remote add origin https://github.com/<owner>/<repo>.git
-git push -u origin main
+- **`NEXT_PUBLIC_SITE_URL`** — if unset, links fall back to
+  `https://jkcycling.com`, so a preview deployment emails people links to
+  production.
+- **`ADMIN_EMAILS`** — entries are trimmed, so `a@x.com, b@y.com` works, but
+  the address must match the Google account exactly.
+
+## Google OAuth
+
+The OAuth client needs an authorised redirect URI per origin that serves
+sign-in:
+
+```
+https://jkcycling.com/api/auth/callback/google
+http://localhost:3000/api/auth/callback/google
 ```
 
-2) Connect repository to Vercel (recommended)
+Preview deployments get generated hostnames, so admin sign-in will not work
+there unless you add that specific URI too.
 
-- Go to https://vercel.com and sign in with GitHub.
-- Click "New Project" -> "Import Git Repository" and pick your repo.
-- For Framework Preset, Vercel should detect "Next.js" automatically.
-- Leave build settings as defaults (Vercel will run `npm run build` and `npm start` as needed).
+## Branches and builds
 
-3) Add environment variables in Vercel
+`vercel.json` sets:
 
-Open the project settings in Vercel and add any required environment variables. At minimum, set:
+- `git.deploymentEnabled` — deploys enabled for `main`.
+- `ignoreCommand` — skips the build only when a commit touches nothing but
+  `.md`/`.txt` files. Vercel treats exit code 0 as "skip", so the condition
+  looks for any file that is *not* documentation. An earlier version matched
+  documentation files instead, which meant any commit touching a `.md`
+  alongside code silently skipped the deploy.
 
-- NEXT_PUBLIC_SITE_URL = https://your-deployed-url.vercel.app (or your domain)
+**Check the Production branch in the Vercel dashboard.** It has not always
+matched what `vercel.json` implies, and a deployment can therefore come from a
+different branch than you expect.
 
-If you plan to wire production subscriptions (Supabase + AWS SES) later, add these as well:
+## Deploying
 
-- SUPABASE_URL
-- SUPABASE_SERVICE_ROLE_KEY
-- AWS_ACCESS_KEY_ID
-- AWS_SECRET_ACCESS_KEY
-- SES_REGION
-- SES_FROM_EMAIL
-- NEXTAUTH_SECRET (if using NextAuth)
-- GITHUB_OAUTH_CLIENT_ID (if enabling GitHub OAuth admin)
-- GITHUB_OAUTH_CLIENT_SECRET
-- GITHUB_ADMIN_PAT (server token used to create PRs)
-
-Make sure you add sensitive keys to the "Environment Variables" section (not the CLI logs).
-
-4) Deploy
-
-Once connected, Vercel will automatically create a preview deployment for your default branch. Merge/push will create subsequent preview/production deployments.
-
-You can also deploy from your local machine using the Vercel CLI:
+Push to the production branch and Vercel builds automatically. To deploy from a
+local checkout:
 
 ```powershell
 npm i -g vercel
 vercel login
-cd D:\jkcycling
 vercel --prod
 ```
 
-5) Configure a custom domain (optional)
+## After a deploy
 
-- In the Vercel project, go to Domains and add `jkcycling.com`.
-- Follow the DNS instructions Vercel shows (usually add A/ALIAS or CNAME records and verify).
-- Add the domain to Vercel and wait for DNS propagation.
+1. Load the home page, an event page, and `/results`.
+2. Sign in at `/admin` and confirm the dashboard renders — this exercises
+   Auth.js, the adapter table, and `ADMIN_EMAILS` together.
+3. Upload an image and a PDF from the event form to exercise S3 and CloudFront.
+4. Only if you mean to: use **Notify** on a test event to exercise Resend. This
+   emails real subscribers, so prefer an event nobody is subscribed to, or an
+   address you control.
 
-6) Verify site and webhooks
+## Troubleshooting
 
-- Visit the Vercel deployment URL (or your domain) and verify pages load (home, events, results, admin page).
-- If you want to be notified of builds or set up CI, configure GitHub actions or webhooks in the repo settings.
-
-7) Troubleshooting
-
-- Build errors: open the Vercel deployment log to see `npm run build` output.
-- Missing env vars: ensure they are present in both Preview and Production environments in Vercel.
-- API behavior different locally vs. Vercel: remember the stub subscription store uses `src/data/subscribers.json` file writes; serverless function environments are ephemeral and file writes may not persist across executions. For production, switch to Supabase (see `README_SUBSCRIPTIONS.md`).
-
-Notes specific to this project
-
-- Content-by-PR model: continue pushing JSON/MD changes via PR to update events. The admin UI can create PRs using a service PAT (we haven't wired this yet).
-- Do not rely on file-based `src/data/subscribers.json` on Vercel. Use Supabase or other DB for persistence in production.
-
-If you want, I can:
-- Walk through pushing the repo to GitHub and connecting to Vercel interactively.
-- Create a Vercel project via the CLI and demonstrate a deploy.
-- Convert the subscription stub to use Supabase and wire SES for email sending once you provide credentials.
-
+| Symptom | Likely cause |
+| --- | --- |
+| Build fails while prerendering | Missing or wrong AWS credentials; the build reads DynamoDB |
+| Push produced no deployment | `ignoreCommand` skipped it, or the Production branch is not the one you pushed |
+| Signed in but "Access Denied" at `/admin` | Address absent from `ADMIN_EMAILS` |
+| Sign-in redirect error | Redirect URI not registered for that origin |
+| Data changes not visible | Cache: writes must call `revalidateTag('events', 'default')`; reads revalidate hourly |
+| Uploads fail with 415 | `/api/upload` only presigns images and PDFs |
+| Emails not arriving | `RESEND_API_KEY`, or the sending domain's DNS in Resend |

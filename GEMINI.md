@@ -1,66 +1,230 @@
-# JK Cycling - Project Context for Gemini
+# JK Cycling — Project Context
 
 ## 1. Project Overview
-**JK Cycling** is a cost-effective, low-maintenance web application designed to promote cycling in Jammu and Kashmir.
-*   **Goal:** Aggregate upcoming events (MTB/Road), publish race results, and build a community.
-*   **Target Audience:** ~50k-80k cycling enthusiasts.
-*   **Core Constraint:** **Low Cost & Low Maintenance.** Infrastructure costs must be minimized.
-    *   **NO external database** (like Postgres/MySQL) is currently used.
-    *   **Data Storage:** Static JSON files in `src/data/` act as the primary database.
+
+**JK Cycling** promotes cycling in Jammu & Kashmir: it aggregates upcoming
+races (MTB/Road), publishes results, and emails a subscriber list when new
+races are announced.
+
+- **Live at:** https://jkcycling.com
+- **Audience:** cycling enthusiasts across J&K's 20 districts.
+- **Core constraint:** low cost, low maintenance. Everything runs on
+  free/serverless tiers; there is no server to administer.
 
 ## 2. Tech Stack
-*   **Framework:** Next.js 16 (App Router)
-*   **Language:** TypeScript
-*   **Styling:** Tailwind CSS 4
-*   **Runtime:** Node.js (v20+)
-*   **Deployment:** Vercel (Standard Git-based deployment)
 
-## 3. Architecture & Data Strategy
+| Concern | Choice |
+| --- | --- |
+| Framework | Next.js 16.1.5 (App Router, Turbopack) |
+| UI | React 19.2, TypeScript 5 |
+| Styling | **CSS Modules + CSS custom properties.** No Tailwind — see §6 |
+| Theming | `next-themes` (class strategy, system default) |
+| Database | AWS DynamoDB (on-demand) |
+| Auth | Auth.js v5 (`next-auth@5` beta) — Google provider, DynamoDB adapter |
+| File storage | AWS S3, served via CloudFront |
+| Transactional email | Resend |
+| Hosting | Vercel |
+| Tests | Vitest |
+| Runtime | Node.js 20+ |
 
-### File Structure
-*   `src/app/`: App Router pages.
-    *   `page.tsx`: Landing page (Upcoming Events).
-    *   `events/[id]/`: Event details.
-    *   `results/`: Race results.
-    *   `admin/`: Basic data entry interface.
-    *   `api/`: Server-side logic (e.g., `api/subscribe`).
-*   `src/data/`: **The Database.**
-    *   `events.json`: List of upcoming events.
-    *   `past-events.json`: Concluded events with results.
-    *   `subscribers.json`: Email list.
-*   `src/types/`: TypeScript definitions (`event.ts`).
-*   `public/`: Static assets (images, PDF notices).
+## 3. Architecture
 
-### Data Management Rules
-1.  **Read-Modify-Write:** To "update the database", you MUST read the relevant JSON file, modify the array/object in memory, and write the entire file back.
-2.  **Strict Typing:** All data entries must strictly adhere to interfaces in `src/types/event.ts`.
-3.  **IDs:** Use slug-based IDs: `YYYY-MM-DD-event-name` (e.g., `2025-12-15-mtb-jammu`).
-4.  **Assets:** Store images/PDFs in `public/` and reference them via root-relative paths (e.g., `/images/events/my-event.jpg`).
+### Data: DynamoDB, not JSON files
 
-## 4. Development Workflow
+Earlier versions of this project used JSON files in `src/data/` as the
+database. **That is no longer true.** All reads and writes go through the
+service layer in `src/services/`. The remaining files under `src/data/` are
+dead seed data and should not be treated as a source of truth.
 
-### Standard Commands
-*   `npm run dev`: Start local development server.
-*   `npm run build`: Production build.
-*   `npm run start`: Start production server.
-*   `npm run lint`: Run code quality checks.
+Three tables, named by environment variable:
 
-### Implementation Guidelines
-*   **Styling:** Use Tailwind Utility classes. Define primary colors in `globals.css`. Make sure new components follow dark/light theme and use css modules as much as possible
-*   **Components:** Small, focused functional components.
-*   **Next.js Patterns:** Use Server Components by default. Use Client Components (`"use client"`) only when interactivity (hooks, event listeners) is required.
-*   **API Documentation** for latest documentation on libraries use context7
+- `DYNAMODB_TABLE_EVENTS` — events, partition key `id`
+- `DYNAMODB_TABLE_SUBSCRIBERS` — subscribers, partition key `email`
+- `DYNAMODB_TABLE_AUTH` (+ `DYNAMODB_TABLE_AUTH_INDEX`) — owned by the
+  Auth.js DynamoDB adapter; do not write to it directly
 
-## 5. Feature Roadmap
-*   [ ] **Ride Groups:** Directory of local clubs (WhatsApp/Strava links).
-*   [ ] **Training:** Guides, plans, and nutrition advice.
-*   [ ] **Blog:** Markdown-based articles from pros.
-*   [ ] **Associations:** Contact info for district sports representatives.
-*   [ ] **Routes:** GPX/Strava route integration.
+### Access layers
 
-## 6. Agent Behavior & Style
-*   **Conventions:** Mimic existing code style (formatting, naming).
-*   **Safety:** Always check file contents (`read_file`) before modifying.
-*   **Efficiency:** Combine shell commands where possible.
-*   **Output:** Be concise. Do not summarize changes unless asked.
-*   **Verification:** Run `npm run lint` or `npm run build` after significant changes to ensure integrity.
+```
+Server Component / Server Action / Route Handler
+        └─> src/services/*        (all DB access lives here)
+              └─> src/lib/dynamodb.ts  (shared document client)
+```
+
+`src/lib/dynamodb.ts` sets `removeUndefinedValues: true`. Without it the SDK
+throws on any `undefined` attribute, and events carry optional fields.
+
+### Caching
+
+Read paths are wrapped in `unstable_cache` with the `events` tag and a 1-hour
+revalidate. **Any write must call `revalidateTag('events', 'default')`** or the
+change stays invisible for up to an hour.
+
+### Auth and admin access
+
+Google sign-in via Auth.js. Being signed in is *not* the same as being an
+admin: `ADMIN_EMAILS` is a comma-separated allowlist, checked in
+`src/lib/auth-utils.ts`.
+
+- `isAdmin()` — boolean, for rendering decisions
+- `requireAdmin()` — throws unless admin, and returns the admin's email for
+  audit stamps
+
+Every admin page, server action, and mutating route handler must gate on one of
+these. `robots.ts` disallows `/admin/`, but that is not a security control.
+
+## 4. File Structure
+
+```
+src/
+  app/
+    page.tsx              Landing page — upcoming events
+    events/[id]/          Event detail
+    results/              Results list
+    results/[id]/         Per-event results (renders for any COMPLETED event)
+    donate/
+    admin/                Dashboard, event create/edit, server actions
+    api/
+      auth/[...nextauth]/ Auth.js handlers
+      subscribe/          POST — double opt-in signup
+      confirm/            GET  — confirm a subscription
+      unsubscribe/        GET renders a page, POST unsubscribes (see §7)
+      upload/             POST — presigned S3 upload URL (admin only)
+    sitemap.ts robots.ts globals.css layout.tsx providers.tsx
+  components/
+    admin/                EventForm, PodiumEditor, Notify/Delete buttons
+    ui/                   Button, Card, Container
+    *.tsx + *.module.css  One CSS module per component
+  services/               eventService, subscriberService
+  lib/                    dynamodb, s3, email, announcement, auth-utils,
+                          event-form, utils
+  types/event.ts          Event, Result, Subscriber, districts, categories
+public/                   Static assets
+```
+
+Tests sit next to the code they cover as `*.test.ts`.
+
+## 5. Data Rules
+
+1. **Writes are full `Put` operations.** `eventService.saveEvent` replaces the
+   whole item. Any field the form does not submit must be carried forward
+   explicitly in `src/lib/event-form.ts`, or it is destroyed. This has already
+   caused one data-loss bug (published results wiped on edit).
+2. **Strict typing.** All records conform to the interfaces in
+   `src/types/event.ts`.
+3. **IDs are slugs:** `YYYY-MM-DD-event-name`, generated by `slugifyEventId`.
+4. **Uploads go to S3**, never the repo. `/api/upload` returns a presigned URL;
+   images land under `events/`, PDFs under `notices/`.
+5. **Never store `""` for an absent value.** Omit the key instead.
+
+## 6. Styling Rules
+
+**Tailwind is not installed.** It is absent from `package.json` and
+`node_modules`, and there is no PostCSS config. `globals.css` defines exactly
+four global classes — `.container`, `.btn`, `.btn-primary`, `.btn-outline` —
+plus the CSS custom properties.
+
+Any `className` like `text-2xl`, `bg-gray-50`, or `flex items-center` is
+**dead markup that styles nothing.** Roughly 51 such occurrences still exist
+across 8 files and are a known outstanding bug; do not add more.
+
+Write styling as:
+
+- A colocated CSS Module (`Component.module.css`) for anything non-trivial.
+- CSS custom properties for every colour, radius and dimension, so light and
+  dark themes both work: `--color-bg`, `--color-bg-secondary`,
+  `--color-surface`, `--color-text`, `--color-text-secondary`,
+  `--color-border`, `--color-primary`, `--color-primary-dark`,
+  `--color-accent`, `--color-success`, `--radius-sm|md|lg`.
+- Never hardcode a hex colour that differs between themes.
+
+## 7. Email Rules
+
+- **Double opt-in.** Signup creates a `pending` subscriber with a single-use
+  `token`; `/api/confirm` promotes them to `confirmed` and deletes that token.
+- **`unsubscribeToken` is long-lived** and separate from the confirmation
+  token. Every bulk email must carry an unsubscribe link built from it, plus
+  the `List-Unsubscribe` and `List-Unsubscribe-Post` headers.
+- **`GET /api/unsubscribe` must never mutate.** Mail clients and security
+  scanners prefetch links; a state-changing GET unsubscribes people who never
+  clicked. `GET` renders a confirmation page, `POST` performs the action.
+- **Escape everything interpolated into an email body** with `escapeHtml` from
+  `src/lib/announcement.ts`.
+- **Sending is triggered explicitly** by an admin, never as a side effect of
+  saving. `Event.notifiedAt` guards against double-sends and must be preserved
+  across edits.
+- One send per recipient (each needs its own unsubscribe link), capped at
+  `MAX_RECIPIENTS_PER_RUN`. Past a few hundred subscribers this needs a queue
+  or Resend's batch API.
+
+## 8. Security Invariants
+
+- No unauthenticated endpoint may mutate data. A public `GET /api/migrate` that
+  re-seeded the events table once existed and was removed; do not reintroduce
+  anything like it.
+- `/api/upload` accepts only the content types we render and sanitises the
+  client-supplied filename.
+- Never commit `.env.local`, and never log a secret. Subscriber email addresses
+  are personal data: do not print them in summaries or commit them.
+
+## 9. Commands
+
+```bash
+npm run dev      # dev server (localhost:3000)
+npm run build    # production build — also type-checks
+npm run lint     # eslint
+npm test         # vitest, single run
+npm run test:watch
+```
+
+Run `npm test` and `npm run build` after any non-trivial change. `npm run
+build` reads from the real DynamoDB tables, so it needs valid AWS credentials.
+
+## 10. Environment
+
+`.env.local` for development; the same keys must exist in the Vercel project.
+
+```
+AWS_ACCESS_KEY_ID  AWS_SECRET_ACCESS_KEY  AWS_REGION
+AUTH_SECRET  AUTH_GOOGLE_ID  AUTH_GOOGLE_SECRET
+DYNAMODB_TABLE_EVENTS  DYNAMODB_TABLE_SUBSCRIBERS
+DYNAMODB_TABLE_AUTH  DYNAMODB_TABLE_AUTH_INDEX
+ADMIN_EMAILS  S3_BUCKET_NAME  RESEND_API_KEY
+NEXT_PUBLIC_CLOUDFRONT_DOMAIN  NEXT_PUBLIC_SITE_URL
+```
+
+`NEXT_PUBLIC_SITE_URL` builds confirmation and unsubscribe links. If it is
+missing, they fall back to `https://jkcycling.com` — which means local testing
+sends people to production.
+
+## 11. Deployment
+
+Vercel, from git. `vercel.json` enables deploys for `main` and skips the build
+only when a commit touches nothing but `.md`/`.txt`. Confirm in the Vercel
+dashboard which branch is set as Production; it has not always matched
+`vercel.json`.
+
+## 12. Conventions
+
+- Server Components by default; `"use client"` only for genuine interactivity.
+- Mutations are Server Actions returning `{ success, message }`, not
+  fetch-to-route-handler.
+- Small, focused components; one responsibility each.
+- Match the surrounding code's style. Comment *why*, not *what*.
+- Prefer a test over a manual check. The logic in `src/lib/` is pure and
+  directly testable; keep it that way.
+
+## 13. Roadmap
+
+Done:
+- [x] Events, results, and admin CRUD on DynamoDB
+- [x] Google admin auth, S3/CloudFront uploads
+- [x] Subscriptions with double opt-in, announcements, unsubscribe
+
+Outstanding:
+- [ ] **Replace the 51 dead Tailwind classes with real CSS** (user-visible)
+- [ ] **Ride Groups:** directory of local clubs (WhatsApp/Strava links)
+- [ ] **Routes:** GPX/Strava route integration
+- [ ] **Blog:** Markdown articles
+- [ ] **Training:** guides, plans, nutrition
+- [ ] **Associations:** district sports representatives

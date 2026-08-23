@@ -1,36 +1,50 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# JK Cycling
 
-## Getting Started
+The website for the cycling community in Jammu & Kashmir — upcoming races,
+published results, and an email list that announces new events.
 
-First, run the development server:
+Live at **[jkcycling.com](https://jkcycling.com)**.
+
+## Stack
+
+Next.js 16 (App Router) · TypeScript · CSS Modules · DynamoDB · S3 +
+CloudFront · Auth.js with Google · Resend · Vercel · Vitest.
+
+There is no Tailwind in this project — styling is CSS Modules plus CSS custom
+properties. See [`GEMINI.md`](./GEMINI.md) §6.
+
+## Getting started
+
+Requires Node.js 20+ and a `.env.local` with AWS, Auth.js, and Resend
+credentials (see [`GEMINI.md`](./GEMINI.md) §10 for the full list).
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev          # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The app reads and writes real DynamoDB tables — there is no local database or
+fixture mode, so `npm run dev` and `npm run build` both need valid AWS
+credentials.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm test             # vitest, single run
+npm run test:watch
+npm run build        # production build; also type-checks
+npm run lint
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Admin
 
-## Learn More
+`/admin` requires signing in with Google *and* having your address listed in
+`ADMIN_EMAILS`. From there you can create and edit events, upload a poster and
+a results PDF, enter podium placings, delete events, and email confirmed
+subscribers about an upcoming race.
 
-To learn more about Next.js, take a look at the following resources:
+## Documentation
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| Document | Contents |
+| --- | --- |
+| [`GEMINI.md`](./GEMINI.md) | Architecture, data rules, styling and email invariants, conventions. Read this first. |
+| [`README_SUBSCRIPTIONS.md`](./README_SUBSCRIPTIONS.md) | How the subscribe / confirm / announce / unsubscribe flow works. |
+| [`DEPLOY_VERCEL.md`](./DEPLOY_VERCEL.md) | Deployment and environment configuration. |
