@@ -5,7 +5,7 @@ import { Event, EventStatus, JK_DISTRICTS, RACE_CATEGORIES } from "@/types/event
 import { saveEventAction } from "@/app/admin/actions";
 import { useFormStatus } from "react-dom";
 import PodiumEditor from "./PodiumEditor";
-import styles from "./EventForm.module.css";
+import styles from "./AdminForm.module.css";
 
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 const MAX_PDF_BYTES = 10 * 1024 * 1024;

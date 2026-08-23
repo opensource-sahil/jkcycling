@@ -6,17 +6,7 @@ import { sendEventAnnouncement } from "@/lib/announcement";
 import { eventService } from "@/services/eventService";
 import { subscriberService } from "@/services/subscriberService";
 import { revalidateTag } from "next/cache";
-
-export type ActionResult = { success: boolean; message: string };
-
-const UNAUTHORIZED = "Unauthorized Access";
-
-function failure(error: unknown, fallback: string): ActionResult {
-  if (error instanceof Error && error.message === UNAUTHORIZED) {
-    return { success: false, message: "You are not authorized to do that." };
-  }
-  return { success: false, message: fallback };
-}
+import { ActionResult, failure } from "@/lib/action-result";
 
 export async function saveEventAction(prevState: unknown, formData: FormData): Promise<ActionResult> {
   try {
