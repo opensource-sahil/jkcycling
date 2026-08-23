@@ -9,9 +9,11 @@ interface SendEmailParams {
   to: string;
   subject: string;
   html: string;
+  /** Extra RFC headers, e.g. List-Unsubscribe on bulk mail. */
+  headers?: Record<string, string>;
 }
 
-export async function sendEmail({ to, subject, html }: SendEmailParams) {
+export async function sendEmail({ to, subject, html, headers }: SendEmailParams) {
   if (!resend) {
     console.warn("RESEND_API_KEY is not set. Email not sent.");
     return { success: false, error: "Missing API Key" };
@@ -23,6 +25,7 @@ export async function sendEmail({ to, subject, html }: SendEmailParams) {
       to,
       subject,
       html,
+      ...(headers ? { headers } : {}),
     });
 
     return { success: true, data };

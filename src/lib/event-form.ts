@@ -179,5 +179,9 @@ export function buildEventFromForm(
   const results = submitted ?? existing?.results;
   if (results && results.length > 0) event.results = results;
 
+  // The form never carries this; losing it would re-arm the notify button and
+  // let the same event be announced to subscribers twice.
+  if (existing?.notifiedAt) event.notifiedAt = existing.notifiedAt;
+
   return event;
 }

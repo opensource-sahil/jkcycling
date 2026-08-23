@@ -3,6 +3,7 @@ import { randomUUID } from 'crypto';
 import { subscriberService } from '@/services/subscriberService';
 import { Subscriber } from '@/types/event';
 import { sendEmail } from '@/lib/email';
+import { escapeHtml } from '@/lib/announcement';
 
 export async function POST(request: Request) {
   const body = await request.json().catch(() => null);
@@ -32,6 +33,9 @@ export async function POST(request: Request) {
       district: body.district || 'Unknown',
       status: 'pending',
       token,
+      // Long-lived and never removed, so every later bulk email can carry a
+      // working unsubscribe link.
+      unsubscribeToken: randomUUID(),
       createdAt: new Date().toISOString(),
     };
 
@@ -49,7 +53,7 @@ export async function POST(request: Request) {
       html: `
         <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
           <h2>Welcome to JK Cycling! 🚴</h2>
-          <p>Hi ${body.name || 'there'},</p>
+          <p>Hi ${escapeHtml(String(body.name || 'there'))},</p>
           <p>Thanks for subscribing to our newsletter. Please click the link below to confirm your email address:</p>
           <p style="margin: 24px 0;">
             <a href="${confirmUrl}" style="background-color: #0070f3; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold;">

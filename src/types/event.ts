@@ -56,6 +56,8 @@ export interface Event {
   };
   notice?: string;
   status: EventStatus;
+  /** Set once subscribers have been emailed about this event. */
+  notifiedAt?: string;
   audit: {
     createdAt: string;
     createdBy?: string;
@@ -71,7 +73,10 @@ export interface Subscriber {
   name?: string;
   district: string;
   status: 'confirmed' | 'pending' | 'unsubscribed';
+  /** Single-use double-opt-in token, removed once the address is confirmed. */
   token?: string;
+  /** Long-lived token backing the unsubscribe link in every bulk email. */
+  unsubscribeToken?: string;
   createdAt: string;
   confirmedAt?: string;
   preferences?: Record<string, boolean>;

@@ -155,6 +155,18 @@ describe('buildEventFromForm — results preservation', () => {
   });
 });
 
+describe('buildEventFromForm — notifiedAt preservation', () => {
+  it('carries forward notifiedAt so an edit cannot re-arm the notify button', () => {
+    const existing = existingCompleted({ notifiedAt: '2026-04-01T09:00:00.000Z' });
+    const built = buildEventFromForm(form(), existing, META);
+    expect(built.notifiedAt).toBe('2026-04-01T09:00:00.000Z');
+  });
+
+  it('leaves notifiedAt unset for an event that has never been announced', () => {
+    expect(buildEventFromForm(form(), existingCompleted(), META).notifiedAt).toBeUndefined();
+  });
+});
+
 describe('buildEventFromForm — notice preservation', () => {
   it('preserves the existing notice when the form omits the field', () => {
     const built = buildEventFromForm(form(), existingCompleted(), META);

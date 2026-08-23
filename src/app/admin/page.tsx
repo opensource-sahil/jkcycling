@@ -2,6 +2,7 @@ import { eventService } from "@/services/eventService";
 import { isAdmin } from "@/lib/auth-utils";
 import Link from "next/link";
 import DeleteEventButton from "@/components/admin/DeleteEventButton";
+import NotifyButton from "@/components/admin/NotifyButton";
 import styles from "@/components/admin/Admin.module.css";
 
 export const dynamic = 'force-dynamic';
@@ -62,6 +63,12 @@ export default async function AdminDashboard() {
                 </td>
                 <td className={styles.td}>
                   <div className={styles.rowActions}>
+                    <NotifyButton
+                      id={event.id}
+                      title={event.title}
+                      status={event.status}
+                      notifiedAt={event.notifiedAt}
+                    />
                     <Link href={`/admin/events/${event.id}`} className={styles.actionLink}>
                       Edit
                     </Link>

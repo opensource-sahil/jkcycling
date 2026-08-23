@@ -7,6 +7,8 @@ const mocks = vi.hoisted(() => ({
   saveEvent: vi.fn(),
   deleteEvent: vi.fn(),
   revalidateTag: vi.fn(),
+  listConfirmed: vi.fn(),
+  sendEventAnnouncement: vi.fn(),
 }));
 
 vi.mock('@/lib/auth-utils', () => ({
@@ -21,11 +23,19 @@ vi.mock('@/services/eventService', () => ({
   },
 }));
 
+vi.mock('@/services/subscriberService', () => ({
+  subscriberService: { listConfirmed: mocks.listConfirmed },
+}));
+
+vi.mock('@/lib/announcement', () => ({
+  sendEventAnnouncement: mocks.sendEventAnnouncement,
+}));
+
 vi.mock('next/cache', () => ({
   revalidateTag: mocks.revalidateTag,
 }));
 
-const { saveEventAction, deleteEventAction } = await import('@/app/admin/actions');
+const { saveEventAction, deleteEventAction, notifyEventAction } = await import('@/app/admin/actions');
 
 const stored: Event = {
   id: '2026-05-01-srinagar-classic',
@@ -61,12 +71,29 @@ function editForm(fields: Record<string, string> = {}) {
   return fd;
 }
 
+const upcoming: Event = {
+  ...stored,
+  id: '2026-09-01-gulmarg-enduro',
+  title: 'Gulmarg Enduro',
+  date: '2026-09-01',
+  status: 'UPCOMING',
+  results: undefined,
+  notifiedAt: undefined,
+};
+
+const subscribers = [
+  { id: 's1', email: 'a@example.test', district: 'Jammu', status: 'confirmed' as const, createdAt: '2026-01-01T00:00:00.000Z' },
+  { id: 's2', email: 'b@example.test', district: 'Srinagar', status: 'confirmed' as const, createdAt: '2026-01-01T00:00:00.000Z' },
+];
+
 beforeEach(() => {
   vi.clearAllMocks();
   mocks.requireAdmin.mockResolvedValue('admin@example.com');
   mocks.getEventById.mockResolvedValue(stored);
   mocks.saveEvent.mockResolvedValue(undefined);
   mocks.deleteEvent.mockResolvedValue(undefined);
+  mocks.listConfirmed.mockResolvedValue(subscribers);
+  mocks.sendEventAnnouncement.mockResolvedValue({ sent: 2, failed: [], skipped: 0 });
 });
 
 describe('saveEventAction', () => {
@@ -120,6 +147,107 @@ describe('saveEventAction', () => {
 
     expect(res).toEqual({ success: false, message: 'You are not authorized to do that.' });
     expect(mocks.saveEvent).not.toHaveBeenCalled();
+  });
+});
+
+describe('notifyEventAction', () => {
+  it('announces an upcoming event and stamps notifiedAt', async () => {
+    mocks.getEventById.mockResolvedValue(upcoming);
+
+    const res = await notifyEventAction(upcoming.id);
+
+    expect(res.success).toBe(true);
+    expect(res.message).toContain('2 subscribers');
+    expect(mocks.sendEventAnnouncement).toHaveBeenCalledWith(upcoming, subscribers);
+
+    const saved = mocks.saveEvent.mock.calls[0][0] as Event;
+    expect(saved.notifiedAt).toBeTruthy();
+  });
+
+  it('refuses an event that is not upcoming', async () => {
+    mocks.getEventById.mockResolvedValue(stored); // COMPLETED
+
+    const res = await notifyEventAction(stored.id);
+
+    expect(res.success).toBe(false);
+    expect(mocks.sendEventAnnouncement).not.toHaveBeenCalled();
+  });
+
+  it('refuses a second send unless it is explicitly a resend', async () => {
+    mocks.getEventById.mockResolvedValue({ ...upcoming, notifiedAt: '2026-08-01T00:00:00.000Z' });
+
+    const res = await notifyEventAction(upcoming.id);
+
+    expect(res.success).toBe(false);
+    expect(res.message).toContain('already been announced');
+    expect(mocks.sendEventAnnouncement).not.toHaveBeenCalled();
+  });
+
+  it('allows an explicit resend', async () => {
+    mocks.getEventById.mockResolvedValue({ ...upcoming, notifiedAt: '2026-08-01T00:00:00.000Z' });
+
+    const res = await notifyEventAction(upcoming.id, { resend: true });
+
+    expect(res.success).toBe(true);
+    expect(mocks.sendEventAnnouncement).toHaveBeenCalled();
+  });
+
+  it('does not send when there are no confirmed subscribers', async () => {
+    mocks.getEventById.mockResolvedValue(upcoming);
+    mocks.listConfirmed.mockResolvedValue([]);
+
+    const res = await notifyEventAction(upcoming.id);
+
+    expect(res.success).toBe(false);
+    expect(mocks.sendEventAnnouncement).not.toHaveBeenCalled();
+    expect(mocks.saveEvent).not.toHaveBeenCalled();
+  });
+
+  it('leaves notifiedAt unset when every send failed, so it can be retried', async () => {
+    mocks.getEventById.mockResolvedValue(upcoming);
+    mocks.sendEventAnnouncement.mockResolvedValue({
+      sent: 0,
+      failed: [{ email: 'a@example.test', error: 'rejected' }],
+      skipped: 0,
+    });
+
+    const res = await notifyEventAction(upcoming.id);
+
+    expect(res.success).toBe(false);
+    expect(mocks.saveEvent).not.toHaveBeenCalled();
+  });
+
+  it('surfaces partial failures and skips in the message', async () => {
+    mocks.getEventById.mockResolvedValue(upcoming);
+    mocks.sendEventAnnouncement.mockResolvedValue({
+      sent: 1,
+      failed: [{ email: 'b@example.test', error: 'rejected' }],
+      skipped: 3,
+    });
+
+    const res = await notifyEventAction(upcoming.id);
+
+    expect(res.success).toBe(true);
+    expect(res.message).toContain('1 failed');
+    expect(res.message).toContain('3 beyond the per-run cap');
+  });
+
+  it('reports a missing event', async () => {
+    mocks.getEventById.mockResolvedValue(null);
+
+    const res = await notifyEventAction('nope');
+
+    expect(res.success).toBe(false);
+    expect(mocks.sendEventAnnouncement).not.toHaveBeenCalled();
+  });
+
+  it('does not send when the caller is not an admin', async () => {
+    mocks.requireAdmin.mockRejectedValue(new Error('Unauthorized Access'));
+
+    const res = await notifyEventAction(upcoming.id);
+
+    expect(res).toEqual({ success: false, message: 'You are not authorized to do that.' });
+    expect(mocks.sendEventAnnouncement).not.toHaveBeenCalled();
   });
 });
 
