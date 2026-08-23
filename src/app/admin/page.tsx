@@ -40,7 +40,7 @@ export default async function AdminDashboard() {
               <th className={styles.th}>Title</th>
               <th className={styles.th}>Type</th>
               <th className={styles.th}>Status</th>
-              <th className={`${styles.th} text-right`}>Actions</th>
+              <th className={`${styles.th} ${styles.thRight}`}>Actions</th>
             </tr>
           </thead>
           <tbody>

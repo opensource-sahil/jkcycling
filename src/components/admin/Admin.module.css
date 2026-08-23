@@ -17,6 +17,15 @@
   color: var(--color-text);
 }
 
+/* Standalone page heading, for admin pages that are not the dashboard.
+   The root layout already supplies the container and vertical rhythm. */
+.pageHeading {
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: 2rem;
+}
+
 .createBtn {
   background-color: var(--color-primary);
   color: white;
@@ -54,6 +63,10 @@
   text-transform: uppercase;
   letter-spacing: 0.05em;
   border-bottom: 1px solid var(--color-border);
+}
+
+.thRight {
+  text-align: right;
 }
 
 .td {

@@ -86,6 +86,12 @@
   color: var(--color-text-secondary);
 }
 
+.pending {
+  font-size: 0.875rem;
+  font-style: italic;
+  color: var(--color-text-secondary);
+}
+
 .actions {
   margin-top: auto;
 }

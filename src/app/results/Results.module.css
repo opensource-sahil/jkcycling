@@ -1,0 +1,27 @@
+.pageTitle {
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: 2rem;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+}
+
+.empty {
+  text-align: center;
+  padding: 3rem 1.5rem;
+  background-color: var(--color-bg-secondary);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-lg);
+  color: var(--color-text-secondary);
+}
+
+@media (min-width: 768px) {
+  .pageTitle {
+    font-size: 2.25rem;
+  }
+}

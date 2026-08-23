@@ -3,6 +3,7 @@ import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Providers } from "./providers";
+import styles from "./layout.module.css";
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://jkcycling.com'),
@@ -30,9 +31,9 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body>
         <Providers>
-          <div className="flex flex-col min-h-screen">
+          <div className={styles.shell}>
             <Header />
-            <main className="flex-1 w-full container" style={{ padding: '2rem 1rem' }}>
+            <main className={`container ${styles.main}`}>
               {children}
             </main>
             <Footer />

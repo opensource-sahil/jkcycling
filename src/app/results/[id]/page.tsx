@@ -3,6 +3,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Result } from '@/types/event';
+import styles from './ResultDetail.module.css';
 
 export async function generateStaticParams() {
   const events = await eventService.getPastEvents();
@@ -20,6 +21,12 @@ function groupResultsByCategory(results: Result[]) {
   return groups;
 }
 
+const PLACE_STYLE: Record<number, string> = {
+  1: styles.gold,
+  2: styles.silver,
+  3: styles.bronze,
+};
+
 export default async function ResultDetailPage({ params }: { params: { id: string } | Promise<{ id: string }> }) {
   const { id } = await params;
   const event = await eventService.getEventById(id);
@@ -34,83 +41,67 @@ export default async function ResultDetailPage({ params }: { params: { id: strin
 
   return (
     <>
-      <div className="card" style={{ overflow: 'hidden', marginBottom: '32px' }}>
-        <div style={{ position: 'relative', width: '100%', height: '300px' }}>
+      <div className={styles.card}>
+        <div className={styles.imageWrapper}>
           <Image src={event.image} alt={event.title} fill unoptimized style={{ objectFit: 'cover' }} />
         </div>
-        <div className="card-body">
-          <p className="text-muted" style={{ fontWeight: 600, textTransform: 'uppercase', marginBottom: '8px' }}>
+        <div className={styles.cardBody}>
+          <p className={styles.meta}>
             {event.type} • {event.district} •{' '}
             {new Date(event.date).toLocaleDateString('en-US', { dateStyle: 'long' })}
           </p>
-          <h1>{event.title}</h1>
-          
-          <div style={{ marginTop: '32px' }}>
-            <h2 className="text-2xl font-bold mb-6">Top Results</h2>
+          <h1 className={styles.title}>{event.title}</h1>
+
+          <div className={styles.resultsSection}>
+            <h2 className={styles.sectionTitle}>Top Results</h2>
 
             {results.length === 0 && (
-              <p
-                style={{
-                  padding: '1.25rem',
-                  borderRadius: 'var(--radius-md)',
-                  border: '1px dashed var(--color-border)',
-                  backgroundColor: 'var(--color-bg-secondary)',
-                  color: 'var(--color-text-secondary)',
-                }}
-              >
+              <p className={styles.empty}>
                 {event.notice
                   ? 'Placings for this race are published in the results PDF below.'
                   : 'Results for this race have not been published yet.'}
               </p>
             )}
 
-            {Object.entries(groupedResults).map(([category, results]) => (
-              <div key={category} className="mb-8">
-                <h3 className="text-lg font-semibold mb-3 px-2 border-l-4 border-[var(--color-primary)] bg-gray-50 py-1">
-                  {category}
-                </h3>
-                <div style={{ display: 'grid', gap: '8px' }}>
-                  {results.sort((a, b) => a.position - b.position).map((r, i) => (
-                    <div key={i} className="flex justify-between items-center p-3 rounded-lg border border-gray-100 hover:bg-gray-50 transition-colors">
-                      <div className="flex items-center gap-4">
-                        <div className={`
-                          w-8 h-8 flex items-center justify-center rounded-full font-bold text-sm
-                          ${r.position === 1 ? 'bg-yellow-100 text-yellow-700' : 
-                            r.position === 2 ? 'bg-gray-200 text-gray-700' : 
-                            r.position === 3 ? 'bg-orange-100 text-orange-800' : 'bg-gray-100 text-gray-500'}
-                        `}>
-                          {r.position}
+            {Object.entries(groupedResults).map(([category, categoryResults]) => (
+              <div key={category} className={styles.categoryGroup}>
+                <h3 className={styles.categoryTitle}>{category}</h3>
+                <div className={styles.rows}>
+                  {categoryResults
+                    .slice()
+                    .sort((a, b) => a.position - b.position)
+                    .map((r, i) => (
+                      <div key={i} className={styles.row}>
+                        <div className={styles.rider}>
+                          <span className={`${styles.position} ${PLACE_STYLE[r.position] ?? ''}`}>
+                            {r.position}
+                          </span>
+                          <div className={styles.name}>
+                            {r.name}
+                            {r.team && <span className={styles.team}>{r.team}</span>}
+                          </div>
                         </div>
-                        <div className="font-medium">
-                          {r.name}
-                          {r.team && <span className="text-sm text-gray-500 block">{r.team}</span>}
-                        </div>
+                        <div className={styles.time}>{r.time}</div>
                       </div>
-                      <div className="font-mono text-lg">{r.time}</div>
-                    </div>
-                  ))}
+                    ))}
                 </div>
               </div>
             ))}
           </div>
 
           {event.notice && (
-            <div style={{ marginTop: '32px', textAlign: 'center' }}>
-              <a
-                href={event.notice}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn inline-block"
-              >
+            <div className={styles.pdfAction}>
+              <a href={event.notice} target="_blank" rel="noopener noreferrer" className="btn btn-primary">
                 Download Full Results PDF
               </a>
             </div>
           )}
         </div>
       </div>
-      <div>
-        <Link href="/results" className="btn" style={{ backgroundColor: 'transparent', color: 'var(--color-text)' }}>← Back to all results</Link>
-      </div>
+
+      <Link href="/results" className="btn btn-outline">
+        ← Back to all results
+      </Link>
     </>
   );
 }
