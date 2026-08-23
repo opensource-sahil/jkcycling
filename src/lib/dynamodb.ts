@@ -9,7 +9,12 @@ export const client = new DynamoDBClient({
   },
 });
 
-export const db = DynamoDBDocumentClient.from(client);
+// removeUndefinedValues is off by default, which makes the SDK throw on any
+// undefined attribute. Events carry optional fields (notice, results,
+// organizer), so drop them instead of failing the write.
+export const db = DynamoDBDocumentClient.from(client, {
+  marshallOptions: { removeUndefinedValues: true },
+});
 
 // Table names from environment variables or defaults
 export const TABLE_EVENTS = process.env.DYNAMODB_TABLE_EVENTS;

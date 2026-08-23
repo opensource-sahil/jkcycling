@@ -1,10 +1,41 @@
 'use client';
 
 import { useState } from 'react';
-import { Event, JK_DISTRICTS, RACE_CATEGORIES, EventType } from "@/types/event";
+import { Event, EventStatus, JK_DISTRICTS, RACE_CATEGORIES } from "@/types/event";
 import { saveEventAction } from "@/app/admin/actions";
 import { useFormStatus } from "react-dom";
+import PodiumEditor from "./PodiumEditor";
 import styles from "./EventForm.module.css";
+
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+const MAX_PDF_BYTES = 10 * 1024 * 1024;
+
+/** Presign, PUT to S3, and return the public URL of the stored object. */
+async function uploadFile(file: File): Promise<string> {
+  const res = await fetch('/api/upload', {
+    method: 'POST',
+    body: JSON.stringify({ filename: file.name, filetype: file.type }),
+  });
+
+  if (!res.ok) {
+    const body = await res.json().catch(() => null);
+    throw new Error(body?.error || 'Failed to get upload URL');
+  }
+
+  const { signedUrl, publicUrl } = await res.json();
+
+  const uploadRes = await fetch(signedUrl, {
+    method: 'PUT',
+    body: file,
+    headers: { 'Content-Type': file.type },
+  });
+
+  if (!uploadRes.ok) {
+    throw new Error(`Upload failed: ${uploadRes.statusText}`);
+  }
+
+  return publicUrl;
+}
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -19,52 +50,59 @@ export default function EventForm({ event }: { event?: Event }) {
   const [selectedCats, setSelectedCats] = useState<string[]>(event?.categories || []);
   const [isUploading, setIsUploading] = useState(false);
   const [imageUrl, setImageUrl] = useState(event?.image || '');
+  const [status, setStatus] = useState<EventStatus>(event?.status || 'UPCOMING');
+  const [noticeUrl, setNoticeUrl] = useState(event?.notice || '');
+  const [isUploadingNotice, setIsUploadingNotice] = useState(false);
+
+  const isCompleted = status === 'COMPLETED';
 
   const toggleCategory = (cat: string) => {
-    setSelectedCats(prev => 
+    setSelectedCats(prev =>
       prev.includes(cat) ? prev.filter(c => c !== cat) : [...prev, cat]
     );
   };
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 5 * 1024 * 1024) { // 5MB limit
-      alert("File is too large (max 5MB)");
+    if (file.size > MAX_IMAGE_BYTES) {
+      alert("Image is too large (max 5MB)");
       return;
     }
 
     setIsUploading(true);
     try {
-      // 1. Get Presigned URL
-      const res = await fetch('/api/upload', {
-        method: 'POST',
-        body: JSON.stringify({ filename: file.name, filetype: file.type }),
-      });
-      
-      if (!res.ok) throw new Error('Failed to get upload URL');
-      const { signedUrl, publicUrl } = await res.json();
-
-      // 2. Upload to S3
-      const uploadRes = await fetch(signedUrl, {
-        method: 'PUT',
-        body: file,
-        headers: { 'Content-Type': file.type },
-      });
-
-      if (!uploadRes.ok) {
-        console.error("S3 Upload Failed:", uploadRes.status, uploadRes.statusText);
-        throw new Error(`Upload failed: ${uploadRes.statusText}`);
-      }
-
-      // 3. Update State
-      setImageUrl(publicUrl);
+      setImageUrl(await uploadFile(file));
     } catch (err) {
       console.error("Upload Error:", err);
-      alert("Error uploading image");
+      alert(err instanceof Error ? err.message : "Error uploading image");
     } finally {
       setIsUploading(false);
+    }
+  };
+
+  const handleNoticeChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.type !== 'application/pdf') {
+      alert("Please choose a PDF file");
+      return;
+    }
+    if (file.size > MAX_PDF_BYTES) {
+      alert("PDF is too large (max 10MB)");
+      return;
+    }
+
+    setIsUploadingNotice(true);
+    try {
+      setNoticeUrl(await uploadFile(file));
+    } catch (err) {
+      console.error("Upload Error:", err);
+      alert(err instanceof Error ? err.message : "Error uploading PDF");
+    } finally {
+      setIsUploadingNotice(false);
     }
   };
 
@@ -73,7 +111,8 @@ export default function EventForm({ event }: { event?: Event }) {
         // Append manual fields
         formData.set("categories", selectedCats.join(','));
         formData.set("image", imageUrl); // Ensure the uploaded URL is sent
-        
+        formData.set("notice", noticeUrl);
+
         const res = await saveEventAction(null, formData);
         if (res.success) {
             alert(res.message);
@@ -131,7 +170,12 @@ export default function EventForm({ event }: { event?: Event }) {
             </div>
             <div className={styles.field}>
                 <label className={styles.label}>Status</label>
-                <select name="status" defaultValue={event?.status || 'UPCOMING'} className={styles.select}>
+                <select
+                    name="status"
+                    value={status}
+                    onChange={(e) => setStatus(e.target.value as EventStatus)}
+                    className={styles.select}
+                >
                     <option value="UPCOMING">Upcoming</option>
                     <option value="COMPLETED">Completed</option>
                     <option value="CANCELLED">Cancelled</option>
@@ -163,7 +207,7 @@ export default function EventForm({ event }: { event?: Event }) {
                 <input 
                     type="file" 
                     accept="image/*" 
-                    onChange={handleFileChange}
+                    onChange={handleImageChange}
                     className={styles.input} 
                     style={{ padding: '0.5rem' }}
                 />
@@ -184,6 +228,41 @@ export default function EventForm({ event }: { event?: Event }) {
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={imageUrl} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 </div>
+            )}
+        </div>
+
+        <div className={styles.field}>
+            <label className={styles.label}>
+                {isCompleted ? 'Results PDF' : 'Event Notice (PDF)'}
+            </label>
+            <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                <input
+                    type="file"
+                    accept="application/pdf"
+                    onChange={handleNoticeChange}
+                    className={styles.input}
+                    style={{ padding: '0.5rem' }}
+                />
+                {isUploadingNotice && <span style={{ color: 'var(--color-primary)', fontWeight: 600 }}>Uploading...</span>}
+            </div>
+
+            <input
+                value={noticeUrl}
+                onChange={(e) => setNoticeUrl(e.target.value)}
+                placeholder="Or enter PDF URL manually"
+                className={styles.input}
+                style={{ marginTop: '0.5rem' }}
+            />
+
+            {noticeUrl && (
+                <a
+                    href={noticeUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: 'var(--color-primary)', fontWeight: 600 }}
+                >
+                    Preview attached PDF →
+                </a>
             )}
         </div>
       </div>
@@ -231,6 +310,15 @@ export default function EventForm({ event }: { event?: Event }) {
             </div>
         </div>
       </div>
+
+      {/* Results — only for completed events. When this section is absent the
+          form submits no `results` field, and the action keeps what is stored. */}
+      {isCompleted && (
+        <div className={styles.section}>
+          <h2 className={styles.sectionTitle}>Podium Results</h2>
+          <PodiumEditor categories={selectedCats} initialResults={event?.results} />
+        </div>
+      )}
 
       <div className={styles.actions}>
         <SubmitButton />
