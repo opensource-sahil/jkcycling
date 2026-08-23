@@ -24,9 +24,13 @@ export default async function ResultDetailPage({ params }: { params: { id: strin
   const { id } = await params;
   const event = await eventService.getEventById(id);
 
-  if (!event || event.status !== 'COMPLETED' || !event.results) return notFound();
+  if (!event || event.status !== 'COMPLETED') return notFound();
 
-  const groupedResults = groupResultsByCategory(event.results);
+  // A race can be published with only a results PDF and no structured
+  // placings, so an empty podium is valid here. The sitemap lists every
+  // completed event, and 404ing on those was costing us indexed pages.
+  const results = event.results ?? [];
+  const groupedResults = groupResultsByCategory(results);
 
   return (
     <>
@@ -43,7 +47,23 @@ export default async function ResultDetailPage({ params }: { params: { id: strin
           
           <div style={{ marginTop: '32px' }}>
             <h2 className="text-2xl font-bold mb-6">Top Results</h2>
-            
+
+            {results.length === 0 && (
+              <p
+                style={{
+                  padding: '1.25rem',
+                  borderRadius: 'var(--radius-md)',
+                  border: '1px dashed var(--color-border)',
+                  backgroundColor: 'var(--color-bg-secondary)',
+                  color: 'var(--color-text-secondary)',
+                }}
+              >
+                {event.notice
+                  ? 'Placings for this race are published in the results PDF below.'
+                  : 'Results for this race have not been published yet.'}
+              </p>
+            )}
+
             {Object.entries(groupedResults).map(([category, results]) => (
               <div key={category} className="mb-8">
                 <h3 className="text-lg font-semibold mb-3 px-2 border-l-4 border-[var(--color-primary)] bg-gray-50 py-1">
