@@ -1,68 +1,104 @@
-Subscription feature (stub) — local dev notes
+# Subscriptions
 
-Overview
+How the email list works: signup, confirmation, announcements, unsubscribe.
 
-- This project includes a simple, local stub for email subscriptions to allow testing without external services.
-- The stub stores subscribers in `src/data/subscribers.json` and implements a double-opt-in confirmation flow using two API routes:
-  - `POST /api/subscribe` — accepts `{ email, name?, district? }`, stores a pending subscriber and returns a `confirmUrl` (dev only).
-  - `GET /api/confirm?token=...` — marks the subscriber as confirmed and redirects to `/?sub_confirmed=1`.
+Storage is the DynamoDB table named by `DYNAMODB_TABLE_SUBSCRIBERS`
+(partition key `email`). Delivery is [Resend](https://resend.com), sending as
+`JK Cycling <notify@notifications.jkcycling.com>`.
 
-Purpose
+> Earlier revisions of this document described a JSON-file stub, with Supabase
+> and AWS SES as the intended production path. Neither was ever built; the
+> implementation is DynamoDB + Resend.
 
-- The stub lets you test the UI and flow before creating a Supabase project and configuring AWS SES.
-- After you verify the UI, you can replace the stub with Supabase and SES using the TODOs below.
+## The flow
 
-How to test locally
+### 1. Signup — `POST /api/subscribe`
 
-1. Start the dev server:
+Body: `{ email, name?, district? }`.
 
-```powershell
-npm run dev
+Creates a subscriber with `status: 'pending'` and two tokens:
+
+| Field | Lifetime | Purpose |
+| --- | --- | --- |
+| `token` | Single use, deleted on confirm | The double opt-in link |
+| `unsubscribeToken` | Permanent | Unsubscribe links in every bulk email |
+
+Then emails a confirmation link. Re-subscribing an existing address is a no-op
+that reports the current state rather than issuing a second record.
+
+### 2. Confirmation — `GET /api/confirm?token=…`
+
+Promotes the subscriber to `confirmed`, records `confirmedAt`, deletes the
+single-use `token`, backfills an `unsubscribeToken` if the record predates that
+field, sends a welcome email, and redirects to `/?sub_confirmed=1`.
+
+### 3. Announcement — admin action
+
+An admin clicks **Notify** on an upcoming event in `/admin`. That calls
+`notifyEventAction`, which loads every `confirmed` subscriber and sends one
+email each via `src/lib/announcement.ts`.
+
+It is deliberately a button and not a side effect of saving an event, because
+a send cannot be recalled. Two guards prevent duplicates:
+
+- `Event.notifiedAt` is set after a successful run, and the action refuses an
+  already-announced event unless `resend` is passed explicitly.
+- `buildEventFromForm` carries `notifiedAt` across edits, so editing an event
+  cannot re-arm the button.
+
+One send per recipient — each carries a personal unsubscribe link, so this
+cannot be a single BCC. Individual failures are collected and reported; they do
+not abort the run. The run is capped at `MAX_RECIPIENTS_PER_RUN` (200) and logs
+loudly if the list exceeds it. Beyond a few hundred subscribers this needs a
+queue or Resend's batch API, since each send is a separate API call inside one
+serverless invocation.
+
+### 4. Unsubscribe — `/api/unsubscribe?token=…`
+
+- **`GET` renders a confirmation page and changes nothing.** Mail clients and
+  security scanners prefetch links; a state-changing GET would unsubscribe
+  people who never clicked.
+- **`POST` performs the unsubscribe.** It serves both the page's button and the
+  RFC 8058 one-click header, so Gmail and Outlook's native unsubscribe button
+  works without ever rendering the page.
+
+The record is kept with `status: 'unsubscribed'` rather than deleted, so a
+later re-subscribe does not resurrect stale confirmation state.
+
+Every announcement carries:
+
+```
+List-Unsubscribe: <https://jkcycling.com/api/unsubscribe?token=…>
+List-Unsubscribe-Post: List-Unsubscribe=One-Click
 ```
 
-2. Open `http://localhost:3000` and use the subscription form near the bottom of the homepage.
-3. The API returns a `confirmUrl` in the response (and logs it to server console). Copy/open that URL to confirm the subscription.
-4. Check `src/data/subscribers.json` to see the `pending` -> `confirmed` status change.
+## Deliverability
 
-Replacing the stub with Supabase + AWS SES (next steps)
+`NEXT_PUBLIC_SITE_URL` builds every confirmation and unsubscribe link. If it is
+unset they fall back to `https://jkcycling.com`, so local testing points people
+at production — set it in `.env.local` and in Vercel.
 
-1. Create a Supabase project and add the following SQL to create the `subscribers` table:
+Keep SPF, DKIM and DMARC configured for the sending domain in Resend. Bulk mail
+without working unsubscribe headers gets spam-foldered, which shows up as
+signups that never confirm.
 
-```sql
-create table subscribers (
-  id uuid primary key default gen_random_uuid(),
-  email text not null unique,
-  name text,
-  district text,
-  status text not null default 'pending',
-  token text,
-  created_at timestamptz default now(),
-  confirmed_at timestamptz
-);
+## Testing locally
+
+`npm run dev`, then use the form on the home page. In development the
+confirmation URL is also logged to the server console, so you can confirm
+without opening the email.
+
+Unit tests cover the announcement builder, the send loop, and the unsubscribe
+route — including that `GET` stays inert:
+
+```bash
+npx vitest run src/lib/announcement.test.ts src/app/api/unsubscribe
 ```
 
-2. Configure AWS SES for `jkcycling.com`:
-   - Verify domain and update DNS records for SES & DKIM.
-   - Create SMTP credentials or an IAM user for SES SendEmail.
+Note that no automated test sends real email; Resend is mocked throughout.
+Verifying live delivery means triggering one send to an address you control.
 
-3. Add these environment variables in Vercel (or your local `.env` for dev):
+## Privacy
 
-- SUPABASE_URL
-- SUPABASE_SERVICE_ROLE_KEY (server-side key)
-- AWS_ACCESS_KEY_ID
-- AWS_SECRET_ACCESS_KEY
-- SES_REGION
-- SES_FROM_EMAIL (e.g. no-reply@jkcycling.com)
-- NEXT_PUBLIC_SITE_URL (for confirmation URL generation)
-
-4. Replace `src/app/api/subscribe/route.ts` and `src/app/api/confirm/route.ts` logic to talk to Supabase (insert rows and update status) and call SES to send confirmation emails.
-
-Delivery
-
-- If you want I can implement the Supabase + SES wiring once you create the Supabase project and provide permission to add secrets.
-
-Security & deliverability notes
-
-- Use double opt-in and include unsubscribe link in all emails.
-- Configure DKIM/SPF via SES to improve deliverability.
-- For sending to large lists (50k), use batching and monitor SES sending quotas.
+Subscriber addresses are personal data. Do not commit them, print them in
+logs or summaries, or copy them out of DynamoDB.

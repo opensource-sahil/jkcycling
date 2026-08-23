@@ -19,5 +19,6 @@ export const db = DynamoDBDocumentClient.from(client, {
 // Table names from environment variables or defaults
 export const TABLE_EVENTS = process.env.DYNAMODB_TABLE_EVENTS;
 export const TABLE_SUBSCRIBERS = process.env.DYNAMODB_TABLE_SUBSCRIBERS;
+export const TABLE_GROUPS = process.env.DYNAMODB_TABLE_GROUPS;
 export const TABLE_AUTH = process.env.DYNAMODB_TABLE_AUTH;
 export const TABLE_AUTH_INDEX = process.env.DYNAMODB_TABLE_AUTH_INDEX;

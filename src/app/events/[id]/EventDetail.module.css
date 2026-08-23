@@ -90,13 +90,38 @@
 
 .actions {
   display: flex;
-  flex-col: column;
-  gap: 1rem;
+  flex-direction: column;
+  gap: 0.75rem;
 }
 
 .actionBtn {
   width: 100%;
   text-align: center;
+}
+
+.actionBtnDisabled {
+  width: 100%;
+  text-align: center;
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.detailBlock {
+  margin-bottom: 1rem;
+}
+
+.detailLine {
+  margin-bottom: 0.5rem;
+}
+
+.contactLine {
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+}
+
+.deadline {
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
 }
 
 @media (min-width: 768px) {

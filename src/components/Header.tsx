@@ -10,6 +10,7 @@ import { ThemeSwitcher } from './ThemeSwitcher';
 const navigation = [
   { name: 'Events', href: '/' },
   { name: 'Results', href: '/results' },
+  { name: 'Groups', href: '/groups' },
   { name: 'Donate', href: '/donate' },
   // { name: 'Admin', href: '/admin' } // Hiding Admin for now, maybe show only if admin?
 ];

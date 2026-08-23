@@ -2,7 +2,6 @@
 
 import Image from 'next/image';
 import { Event } from '@/types/event';
-import { Button } from './ui/Button';
 import styles from './ResultCard.module.css';
 
 interface ResultCardProps {
@@ -37,14 +36,19 @@ export function ResultCard({ event }: ResultCardProps) {
             </div>
           ))}
           {(!event.results || event.results.length === 0) && (
-            <p className="text-sm text-gray-500 italic">Results pending...</p>
+            <p className={styles.pending}>Results pending...</p>
           )}
         </div>
         
         {event.notice && (
           <div className={styles.actions}>
-            <a href={event.notice} target="_blank" rel="noopener noreferrer">
-              <Button style={{ backgroundColor: 'transparent', border: '1px solid var(--color-primary)', color: 'var(--color-primary)' }}>Download Full Results (PDF)</Button>
+            <a
+              href={event.notice}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn btn-outline"
+            >
+              Download Full Results (PDF)
             </a>
           </div>
         )}

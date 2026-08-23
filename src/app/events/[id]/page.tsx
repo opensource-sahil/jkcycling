@@ -38,7 +38,7 @@ export default async function EventPage({ params }: { params: { id: string } | P
             <div className={styles.column}>
               <h3 className={styles.sectionTitle}>Event Details</h3>
               
-              <div className="mb-4">
+              <div className={styles.detailBlock}>
                 <strong>Categories:</strong>
                 <div className={styles.tagContainer}>
                   {event.categories?.map(cat => (
@@ -49,16 +49,16 @@ export default async function EventPage({ params }: { params: { id: string } | P
                 </div>
               </div>
 
-              <p className="mb-2">
+              <p className={styles.detailLine}>
                 <strong>Location:</strong> {event.location}
               </p>
-              
+
               {event.organizer?.contact && (
                  <div className={styles.organizerBox}>
                    <strong>Organizer Contact:</strong>
                    <p>{event.organizer.name}</p>
-                   {event.organizer.contact.name && <p className="text-sm text-gray-600">{event.organizer.contact.name} ({event.organizer.contact.role})</p>}
-                   {event.organizer.contact.phone && <p className="text-sm text-gray-600">📞 {event.organizer.contact.phone}</p>}
+                   {event.organizer.contact.name && <p className={styles.contactLine}>{event.organizer.contact.name} ({event.organizer.contact.role})</p>}
+                   {event.organizer.contact.phone && <p className={styles.contactLine}>📞 {event.organizer.contact.phone}</p>}
                  </div>
               )}
             </div>
@@ -68,24 +68,34 @@ export default async function EventPage({ params }: { params: { id: string } | P
               <h3 className={styles.sectionTitle}>Registration</h3>
               
               {event.registration?.deadline && (
-                <p className="mb-4 text-sm">
+                <p className={styles.deadline}>
                   <strong>Deadline:</strong> {new Date(event.registration.deadline).toLocaleDateString()}
                 </p>
               )}
 
-              <div className="flex flex-col gap-3">
+              <div className={styles.actions}>
                 {isRegistrationOpen && event.registration?.url ? (
-                  <a href={event.registration.url} className="btn w-full text-center" target="_blank" rel="noopener noreferrer">
+                  <a
+                    href={event.registration.url}
+                    className={`btn btn-primary ${styles.actionBtn}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
                     Register Now {event.registration.fee ? `(${event.registration.fee})` : ''}
                   </a>
                 ) : (
-                  <button disabled className="btn w-full text-center opacity-50 cursor-not-allowed">
+                  <button disabled className={`btn btn-primary ${styles.actionBtnDisabled}`}>
                     Registration Closed
                   </button>
                 )}
 
                 {event.notice && (
-                  <a href={event.notice} className="btn w-full text-center" style={{ backgroundColor: 'transparent', border: '1px solid var(--color-primary)', color: 'var(--color-primary)' }} target="_blank" rel="noopener noreferrer">
+                  <a
+                    href={event.notice}
+                    className={`btn btn-outline ${styles.actionBtn}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
                     Download Notice (PDF)
                   </a>
                 )}
@@ -94,9 +104,7 @@ export default async function EventPage({ params }: { params: { id: string } | P
           </div>
         </div>
       </div>
-      <div>
-        <Link href="/" className="btn" style={{ backgroundColor: 'transparent', color: 'var(--color-text)' }}>← Back to all events</Link>
-      </div>
+      <Link href="/" className="btn btn-outline">← Back to all events</Link>
     </>
   );
 }

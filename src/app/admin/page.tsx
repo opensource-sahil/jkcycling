@@ -27,9 +27,14 @@ export default async function AdminDashboard() {
     <div className={styles.container}>
       <div className={styles.header}>
         <h1 className={styles.title}>Admin Dashboard</h1>
-        <Link href="/admin/events/new" className={styles.createBtn}>
-          + Create New Event
-        </Link>
+        <div className={styles.rowActions}>
+          <Link href="/admin/groups" className={styles.actionLink}>
+            Ride Groups
+          </Link>
+          <Link href="/admin/events/new" className={styles.createBtn}>
+            + Create New Event
+          </Link>
+        </div>
       </div>
 
       <div className={styles.tableContainer}>
@@ -40,7 +45,7 @@ export default async function AdminDashboard() {
               <th className={styles.th}>Title</th>
               <th className={styles.th}>Type</th>
               <th className={styles.th}>Status</th>
-              <th className={`${styles.th} text-right`}>Actions</th>
+              <th className={`${styles.th} ${styles.thRight}`}>Actions</th>
             </tr>
           </thead>
           <tbody>
