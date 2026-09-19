@@ -8,6 +8,8 @@ import styles from './Home.module.css';
 
 export const revalidate = 3600; // revalidate at most every hour
 
+const PODIUM_ORDER = [2, 1, 3];
+
 export default async function Home() {
   const [upcomingEvents, pastEvents] = await Promise.all([
     eventService.getUpcomingEvents(),
@@ -17,6 +19,11 @@ export default async function Home() {
   const latest = getLatestResult(pastEvents);
   const podium = latest ? getPodium(latest.results) : [];
   const showLatestResults = Boolean(latest) && podium.length > 0;
+
+  const byPosition = new Map(podium.map((result) => [result.position, result]));
+  const orderedPodium = PODIUM_ORDER.filter((position) => byPosition.has(position)).map(
+    (position) => byPosition.get(position)!
+  );
 
   return (
     <>
@@ -65,7 +72,7 @@ export default async function Home() {
                 </span>
               </div>
               <div className="podium">
-                {podium.map((result) => {
+                {orderedPodium.map((result) => {
                   const placeLabel = result.position === 1 ? '1ST' : result.position === 2 ? '2ND' : '3RD';
                   return (
                     <div key={result.position} className={`pod pod--${result.position}`}>

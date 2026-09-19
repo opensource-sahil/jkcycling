@@ -56,11 +56,15 @@ export default function EventCard({ event }: EventCardProps) {
     year: 'numeric',
   });
 
-  const primaryAction = event.registration.isOpen
+  const deadlinePassed =
+    !!event.registration.deadline && new Date(event.registration.deadline) < new Date();
+  const canRegister = event.registration.isOpen && !!event.registration.url && !deadlinePassed;
+
+  const primaryAction = canRegister
     ? {
         label: 'Register to ride',
-        href: event.registration.url || detailHref,
-        external: Boolean(event.registration.url),
+        href: event.registration.url!,
+        external: true,
         className: 'btn btn--accent btn--block',
       }
     : {

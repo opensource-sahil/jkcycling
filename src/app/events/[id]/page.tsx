@@ -28,6 +28,12 @@ export default async function EventPage({ params }: { params: { id: string } | P
   const hasOrganizer = Boolean(event.organizer?.name || event.organizer?.contact);
   const contact = event.organizer?.contact;
 
+  // A passed deadline closes registration even when isOpen is still true —
+  // the deadline is a fact independent of the manually-toggled isOpen flag.
+  const deadlinePassed =
+    !!event.registration.deadline && new Date(event.registration.deadline) < new Date();
+  const canRegister = event.registration.isOpen && !!event.registration.url && !deadlinePassed;
+
   // Label for the disabled Register button — derived from the actual reason
   // registration isn't clickable, independent of the status badge above it.
   // (registration.isOpen can be true with no url yet, which must never read
@@ -37,6 +43,8 @@ export default async function EventPage({ params }: { params: { id: string } | P
       ? 'Registration closed'
       : event.status === 'COMPLETED'
       ? 'Event finished'
+      : deadlinePassed
+      ? 'Registration closed'
       : event.registration.isOpen && !event.registration.url
       ? 'Registration link coming soon'
       : 'Registration closed';
@@ -124,7 +132,7 @@ export default async function EventPage({ params }: { params: { id: string } | P
               <p className={styles.instructions}>{event.registration.instructions}</p>
             )}
 
-            {event.registration.isOpen && event.registration.url ? (
+            {canRegister ? (
               <a
                 href={event.registration.url}
                 className="btn btn--accent btn--block btn--lg"
