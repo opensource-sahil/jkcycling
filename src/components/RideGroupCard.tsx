@@ -1,4 +1,4 @@
-import { RideGroup } from '@/types/ride-group';
+import { RideGroup, RidePace } from '@/types/ride-group';
 import styles from './RideGroupCard.module.css';
 
 const LINK_LABELS: { key: keyof RideGroup['links']; label: string }[] = [
@@ -8,20 +8,36 @@ const LINK_LABELS: { key: keyof RideGroup['links']; label: string }[] = [
   { key: 'website', label: 'Website' },
 ];
 
+const PACE_BADGE_TONE: Record<RidePace, string> = {
+  'Beginner friendly': 'badge badge--success',
+  Intermediate: 'badge badge--warning',
+  Fast: 'badge badge--danger',
+  'All paces welcome': 'badge badge--info',
+};
+
 export function RideGroupCard({ group }: { group: RideGroup }) {
   const links = LINK_LABELS.filter(({ key }) => group.links?.[key]);
+  const contactLine = group.contact
+    ? [group.contact.name, group.contact.phone, group.contact.email]
+        .filter(Boolean)
+        .join(' · ')
+    : null;
 
   return (
-    <article className={styles.card}>
-      <div className={styles.header}>
+    <article className={`card ${styles.card}`}>
+      <div className={styles.head}>
         <h3 className={styles.name}>{group.name}</h3>
-        {group.pace && <span className={styles.pace}>{group.pace}</span>}
+        {group.pace && (
+          <span className={PACE_BADGE_TONE[group.pace]}>{group.pace}</span>
+        )}
       </div>
 
       {group.disciplines.length > 0 && (
-        <div className={styles.tags}>
-          {group.disciplines.map((d) => (
-            <span key={d} className={styles.tag}>{d}</span>
+        <div className="chips">
+          {group.disciplines.map((discipline) => (
+            <span key={discipline} className="chip">
+              {discipline}
+            </span>
           ))}
         </div>
       )}
@@ -31,19 +47,23 @@ export function RideGroupCard({ group }: { group: RideGroup }) {
       {(group.schedule || group.meetingPoint) && (
         <div className={styles.facts}>
           {group.schedule && (
-            <span><span className={styles.factLabel}>Rides:</span> {group.schedule}</span>
+            <div className={styles.fact}>
+              <span className={styles.factKey}>Rides</span>
+              <span className={styles.factValue}>{group.schedule}</span>
+            </div>
           )}
           {group.meetingPoint && (
-            <span><span className={styles.factLabel}>Meets at:</span> {group.meetingPoint}</span>
+            <div className={styles.fact}>
+              <span className={styles.factKey}>Meets</span>
+              <span className={styles.factValue}>{group.meetingPoint}</span>
+            </div>
           )}
         </div>
       )}
 
-      {group.contact && (group.contact.name || group.contact.phone) && (
+      {contactLine && (
         <p className={styles.contact}>
-          {group.contact.name}
-          {group.contact.name && group.contact.phone ? ' · ' : ''}
-          {group.contact.phone}
+          <span className={styles.factKey}>Contact</span> {contactLine}
         </p>
       )}
 
@@ -55,7 +75,7 @@ export function RideGroupCard({ group }: { group: RideGroup }) {
               href={group.links[key]}
               target="_blank"
               rel="noopener noreferrer"
-              className={styles.link}
+              className="btn btn--secondary btn--sm"
             >
               {label}
             </a>
