@@ -27,9 +27,9 @@ export default function SubscribeForm({ variant = 'stacked' }: SubscribeFormProp
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error || 'Request failed');
-      
+
       setMessage(data.message || 'Check your email for a confirmation link!');
-      
+
       setEmail('');
       setName('');
       setDistrict('');
@@ -65,40 +65,52 @@ export default function SubscribeForm({ variant = 'stacked' }: SubscribeFormProp
   return (
     <form onSubmit={handleSubmit} className={styles.container}>
       <h3 className={styles.title}>Stay Updated with JK Cycling</h3>
-      <div className={styles.formGroup}>
-        <input 
-          type="text" 
-          placeholder="Your Name (optional)" 
-          value={name} 
-          onChange={(e) => setName(e.target.value)} 
-          className={styles.input}
-        />
-        <input 
-          type="email" 
-          required 
-          placeholder="Your Email Address" 
-          value={email} 
-          onChange={(e) => setEmail(e.target.value)} 
-          className={styles.input}
-        />
-        <select 
-          value={district} 
-          onChange={(e) => setDistrict(e.target.value)} 
-          className={styles.select}
-        >
-          <option value="">Select your District (optional)</option>
-          {JK_DISTRICTS.map((d) => (
-            <option key={d} value={d}>{d}</option>
-          ))}
-        </select>
+      <div className={styles.fields}>
+        <div className={`field ${styles.field}`}>
+          <label htmlFor="subscribe-name">Name (optional)</label>
+          <input
+            id="subscribe-name"
+            type="text"
+            placeholder="Your name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="input"
+          />
+        </div>
+        <div className={`field ${styles.field}`}>
+          <label htmlFor="subscribe-email">Email</label>
+          <input
+            id="subscribe-email"
+            type="email"
+            required
+            placeholder="you@example.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="input"
+          />
+        </div>
+        <div className={`field ${styles.field}`}>
+          <label htmlFor="subscribe-district">District (optional)</label>
+          <select
+            id="subscribe-district"
+            value={district}
+            onChange={(e) => setDistrict(e.target.value)}
+            className="input"
+          >
+            <option value="">Select your district</option>
+            {JK_DISTRICTS.map((d) => (
+              <option key={d} value={d}>{d}</option>
+            ))}
+          </select>
+        </div>
       </div>
-      <button type="submit" disabled={loading} className={`btn btn-primary ${styles.button}`}>
+      <button type="submit" disabled={loading} className="btn btn--primary btn--block">
         {loading ? 'Subscribing...' : 'Subscribe to Newsletter'}
       </button>
       {message && (
-        <div className={styles.message}>
+        <p className={styles.message} role="status">
           {message}
-        </div>
+        </p>
       )}
     </form>
   );
