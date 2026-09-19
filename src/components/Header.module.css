@@ -95,6 +95,7 @@
 
 .donateCta {
   white-space: nowrap;
+  display: none;
 }
 
 /* ---------- Auth ---------- */
@@ -136,6 +137,10 @@
 
   .menuBtn {
     display: none;
+  }
+
+  .donateCta {
+    display: inline-flex;
   }
 }
 

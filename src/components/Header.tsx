@@ -131,8 +131,10 @@ export default function Header() {
         id="mobile-nav-drawer"
         className={`${styles.drawer} ${drawerOpen ? styles.drawerOpen : ''}`}
         role="dialog"
-        aria-modal="true"
+        aria-modal={drawerOpen}
         aria-label="Mobile navigation"
+        aria-hidden={!drawerOpen}
+        inert={!drawerOpen}
       >
         <div className={styles.drawerHeader}>
           <span className={styles.brand}>JK Cycling</span>
