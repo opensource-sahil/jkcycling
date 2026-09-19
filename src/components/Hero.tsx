@@ -5,7 +5,7 @@ export default function Hero() {
   return (
     <section className={styles.hero}>
       <div className={`container ${styles.heroGrid}`}>
-        <div className={styles.heroCopy}>
+        <div>
           <p className="eyebrow">Jammu &amp; Kashmir</p>
           <h1 className={styles.heroTitle}>Ride the high passes.</h1>
           <p className={styles.heroLede}>
