@@ -19,7 +19,6 @@
   aspect-ratio: 16 / 9;
   display: grid;
   place-items: center;
-  color: #fff;
   overflow: hidden;
 }
 
@@ -30,10 +29,12 @@
 
 .mGreen {
   background: linear-gradient(135deg, var(--primary), var(--primary-active));
+  color: var(--on-primary);
 }
 
 .mSky {
   background: linear-gradient(135deg, var(--info), #0f3b54);
+  color: var(--on-info);
 }
 
 .mFlat {
