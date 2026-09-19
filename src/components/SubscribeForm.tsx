@@ -4,7 +4,11 @@ import { useState } from 'react';
 import styles from './SubscribeForm.module.css';
 import { JK_DISTRICTS } from '@/types/event';
 
-export default function SubscribeForm() {
+interface SubscribeFormProps {
+  variant?: 'stacked' | 'inline';
+}
+
+export default function SubscribeForm({ variant = 'stacked' }: SubscribeFormProps) {
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
   const [district, setDistrict] = useState('');
@@ -34,6 +38,28 @@ export default function SubscribeForm() {
     } finally {
       setLoading(false);
     }
+  }
+
+  if (variant === 'inline') {
+    return (
+      <form onSubmit={handleSubmit} className={styles.inlineForm}>
+        <div className={styles.inlineRow}>
+          <input
+            type="email"
+            required
+            placeholder="you@example.com"
+            aria-label="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className={`input ${styles.inlineInput}`}
+          />
+          <button type="submit" disabled={loading} className="btn btn--primary">
+            {loading ? 'Subscribing...' : 'Subscribe'}
+          </button>
+        </div>
+        {message && <div className={styles.inlineMessage}>{message}</div>}
+      </form>
+    );
   }
 
   return (
