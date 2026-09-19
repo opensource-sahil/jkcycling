@@ -1,27 +1,27 @@
 .pageTitle {
-  font-size: 1.875rem;
+  font-family: var(--font-display);
+  font-size: clamp(28px, 5vw, 40px);
+  line-height: 1.1;
   font-weight: 700;
-  color: var(--color-text);
-  margin-bottom: 2rem;
+  margin: var(--space-1) 0 var(--space-6);
+  color: var(--text);
+}
+
+.filters {
+  margin-bottom: var(--space-6);
 }
 
 .list {
   display: flex;
   flex-direction: column;
-  gap: 2.5rem;
+  gap: var(--space-6);
 }
 
 .empty {
   text-align: center;
-  padding: 3rem 1.5rem;
-  background-color: var(--color-bg-secondary);
-  border: 1px dashed var(--color-border);
+  padding: var(--space-10) var(--space-5);
+  background: var(--surface-raised);
+  border: 1px dashed var(--border);
   border-radius: var(--radius-lg);
-  color: var(--color-text-secondary);
-}
-
-@media (min-width: 768px) {
-  .pageTitle {
-    font-size: 2.25rem;
-  }
+  color: var(--text-muted);
 }
