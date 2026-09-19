@@ -1,9 +1,9 @@
 .card {
-  background-color: var(--color-surface);
-  border: 1px solid var(--color-border);
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
   border-radius: var(--radius-md);
   overflow: hidden;
-  margin-bottom: 2rem;
+  box-shadow: var(--shadow-sm);
 }
 
 .imageWrapper {
@@ -13,139 +13,54 @@
 }
 
 .cardBody {
-  padding: 1.5rem;
-}
-
-.meta {
-  color: var(--color-primary);
-  font-weight: 600;
-  text-transform: uppercase;
-  font-size: 0.85rem;
-  margin-bottom: 0.5rem;
+  padding: var(--space-5);
 }
 
 .title {
-  font-size: 2rem;
-  font-weight: 800;
-  color: var(--color-text);
-  margin-bottom: 1rem;
-  line-height: 1.2;
+  font-family: var(--font-display);
+  font-size: clamp(28px, 5vw, 40px);
+  font-weight: 700;
+  line-height: 1.15;
+  margin: var(--space-1) 0 var(--space-6);
+}
+
+.podium {
+  margin-bottom: var(--space-8);
 }
 
 .resultsSection {
-  margin-top: 2rem;
-  padding-top: 2rem;
-  border-top: 1px solid var(--color-border);
+  margin-top: var(--space-8);
+  padding-top: var(--space-6);
+  border-top: 1px solid var(--border);
 }
 
 .sectionTitle {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--color-text);
-  margin-bottom: 1.5rem;
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 600;
+  margin: 0 0 var(--space-5);
 }
 
 .empty {
-  padding: 1.25rem;
+  padding: var(--space-5);
   border-radius: var(--radius-md);
-  border: 1px dashed var(--color-border);
-  background-color: var(--color-bg-secondary);
-  color: var(--color-text-secondary);
+  border: 1px dashed var(--border);
+  background: var(--surface-sunken);
+  color: var(--text-muted);
 }
 
-.categoryGroup {
-  margin-bottom: 2rem;
-}
-
-.categoryTitle {
-  font-size: 1.05rem;
-  font-weight: 600;
-  color: var(--color-text);
-  background-color: var(--color-bg-secondary);
-  border-left: 4px solid var(--color-primary);
-  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
-  padding: 0.4rem 0.75rem;
-  margin-bottom: 0.75rem;
-}
-
-.rows {
-  display: grid;
-  gap: 0.5rem;
-}
-
-.row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1rem;
-  padding: 0.75rem;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  transition: background-color 0.2s ease;
-}
-
-.row:hover {
-  background-color: var(--color-bg-secondary);
-}
-
-.rider {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  min-width: 0;
-}
-
-.position {
-  width: 2rem;
-  height: 2rem;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 999px;
-  font-size: 0.85rem;
-  font-weight: 700;
-  background-color: var(--color-bg-secondary);
-  color: var(--color-text-secondary);
-}
-
-/* Both colours are set, so these read correctly in either theme. */
-.gold {
-  background-color: #fde68a;
-  color: #78350f;
-}
-
-.silver {
-  background-color: #e2e8f0;
-  color: #334155;
-}
-
-.bronze {
-  background-color: #fed7aa;
-  color: #7c2d12;
-}
-
-.name {
-  font-weight: 500;
-  color: var(--color-text);
-  min-width: 0;
+.tableWrap {
+  overflow-x: auto;
 }
 
 .team {
   display: block;
-  font-size: 0.85rem;
-  color: var(--color-text-secondary);
-}
-
-.time {
-  font-family: monospace;
-  font-size: 1.05rem;
-  color: var(--color-text);
-  white-space: nowrap;
+  font-size: 13px;
+  color: var(--text-muted);
 }
 
 .pdfAction {
-  margin-top: 2rem;
+  margin-top: var(--space-8);
   text-align: center;
 }
 
@@ -155,6 +70,6 @@
   }
 
   .cardBody {
-    padding: 2.5rem;
+    padding: var(--space-8);
   }
 }
