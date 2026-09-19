@@ -1,4 +1,5 @@
 import { eventService } from '@/services/eventService';
+import { getEventStatusBadge } from '@/lib/event-card';
 import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -9,102 +10,135 @@ export async function generateStaticParams() {
   return events.map((e) => ({ id: e.id }));
 }
 
+const badgeToneClass: Record<'success' | 'warning' | 'neutral' | 'danger' | 'brand', string> = {
+  success: 'badge badge--success',
+  warning: 'badge badge--warning',
+  neutral: 'badge badge--neutral',
+  danger: 'badge badge--danger',
+  brand: 'badge badge--brand',
+};
+
 export default async function EventPage({ params }: { params: { id: string } | Promise<{ id: string }> }) {
   const { id } = await params;
   const event = await eventService.getEventById(id);
 
   if (!event) return notFound();
 
-  const isRegistrationOpen = event.registration?.isOpen && 
-    (!event.registration.deadline || new Date(event.registration.deadline) > new Date());
+  const badge = getEventStatusBadge(event);
+  const hasOrganizer = Boolean(event.organizer?.name || event.organizer?.contact);
+  const contact = event.organizer?.contact;
+
+  const formattedDate = new Date(event.date).toLocaleDateString('en-US', { dateStyle: 'long' });
+  const formattedDeadline = event.registration.deadline
+    ? new Date(event.registration.deadline).toLocaleDateString('en-US', { dateStyle: 'long' })
+    : null;
 
   return (
     <>
-      <div className={styles.card}>
-        <div className={styles.imageWrapper}>
-          <Image src={event.image} alt={event.title} fill unoptimized style={{ objectFit: 'cover' }} />
-        </div>
-        <div className={styles.cardBody}>
-          <p className={styles.meta}>
-            {event.type} • {event.district} •{' '}
-            {new Date(event.date).toLocaleDateString('en-US', { dateStyle: 'long' })}
+      <Link href="/" className="link">← All events</Link>
+
+      <div className={styles.layout}>
+        <div className={styles.main}>
+          <div className={styles.poster}>
+            <Image src={event.image} alt={event.title} fill unoptimized style={{ objectFit: 'cover' }} />
+          </div>
+
+          <p className={`eyebrow ${styles.eyebrow}`}>
+            {event.type} · {event.district} · {formattedDate}
           </p>
           <h1 className={styles.title}>{event.title}</h1>
+          {badge && <span className={badgeToneClass[badge.tone]}>{badge.label}</span>}
+
           <p className={styles.description}>{event.description}</p>
 
-          <div className={styles.columns}>
-            
-            {/* Left Column: Details */}
-            <div className={styles.column}>
-              <h3 className={styles.sectionTitle}>Event Details</h3>
-              
-              <div className={styles.detailBlock}>
-                <strong>Categories:</strong>
-                <div className={styles.tagContainer}>
-                  {event.categories?.map(cat => (
-                    <span key={cat} className={styles.tag}>
-                      {cat}
-                    </span>
-                  ))}
-                </div>
+          {event.categories.length > 0 && (
+            <div className={styles.block}>
+              <h2 className={styles.subHeading}>Categories</h2>
+              <div className="chips">
+                {event.categories.map((category) => (
+                  <span key={category} className="chip">{category}</span>
+                ))}
               </div>
-
-              <p className={styles.detailLine}>
-                <strong>Location:</strong> {event.location}
-              </p>
-
-              {event.organizer?.contact && (
-                 <div className={styles.organizerBox}>
-                   <strong>Organizer Contact:</strong>
-                   <p>{event.organizer.name}</p>
-                   {event.organizer.contact.name && <p className={styles.contactLine}>{event.organizer.contact.name} ({event.organizer.contact.role})</p>}
-                   {event.organizer.contact.phone && <p className={styles.contactLine}>📞 {event.organizer.contact.phone}</p>}
-                 </div>
-              )}
             </div>
+          )}
 
-            {/* Right Column: Actions */}
-            <div className={styles.column}>
-              <h3 className={styles.sectionTitle}>Registration</h3>
-              
-              {event.registration?.deadline && (
-                <p className={styles.deadline}>
-                  <strong>Deadline:</strong> {new Date(event.registration.deadline).toLocaleDateString()}
-                </p>
-              )}
-
-              <div className={styles.actions}>
-                {isRegistrationOpen && event.registration?.url ? (
-                  <a
-                    href={event.registration.url}
-                    className={`btn btn-primary ${styles.actionBtn}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Register Now {event.registration.fee ? `(${event.registration.fee})` : ''}
-                  </a>
-                ) : (
-                  <button disabled className={`btn btn-primary ${styles.actionBtnDisabled}`}>
-                    Registration Closed
-                  </button>
-                )}
-
-                {event.notice && (
-                  <a
-                    href={event.notice}
-                    className={`btn btn-outline ${styles.actionBtn}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Download Notice (PDF)
-                  </a>
+          {hasOrganizer && (
+            <div className={styles.block}>
+              <h2 className={styles.subHeading}>Organizer</h2>
+              <div className="card">
+                {event.organizer?.name && <p className={styles.organizerName}>{event.organizer.name}</p>}
+                {contact && (
+                  <ul className={styles.contactList}>
+                    {contact.name && (
+                      <li>{contact.name}{contact.role ? ` · ${contact.role}` : ''}</li>
+                    )}
+                    {contact.phone && <li>{contact.phone}</li>}
+                    {contact.email && <li>{contact.email}</li>}
+                  </ul>
                 )}
               </div>
             </div>
-          </div>
+          )}
         </div>
+
+        <aside className={styles.side}>
+          <div className="card">
+            {event.registration.fee && (
+              <div className={styles.price}>
+                <span className={styles.priceValue}>{event.registration.fee}</span>
+                <span className="muted">entry</span>
+              </div>
+            )}
+
+            <div className={styles.facts}>
+              <div className={styles.factRow}>
+                <span className="muted">Date</span>
+                <span className={styles.factValue}>{formattedDate}</span>
+              </div>
+              <div className={styles.factRow}>
+                <span className="muted">Location</span>
+                <span className={styles.factValue}>{event.location}</span>
+              </div>
+              {formattedDeadline && (
+                <div className={styles.factRow}>
+                  <span className="muted">Registration closes</span>
+                  <span className={styles.factValue}>{formattedDeadline}</span>
+                </div>
+              )}
+            </div>
+
+            {event.registration.instructions && (
+              <p className={styles.instructions}>{event.registration.instructions}</p>
+            )}
+
+            {event.registration.isOpen && event.registration.url ? (
+              <a
+                href={event.registration.url}
+                className="btn btn--accent btn--block btn--lg"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Register to ride
+              </a>
+            ) : (
+              <button type="button" disabled className={`btn btn--secondary btn--block btn--lg ${styles.closedBtn}`}>
+                {event.status === 'CANCELLED' ? 'Event cancelled' : badge?.label ?? 'Registration closed'}
+              </button>
+            )}
+
+            {event.notice && (
+              <a
+                href={event.notice}
+                className={`btn btn--secondary btn--block ${styles.noticeLink}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Download notice (PDF)
+              </a>
+            )}
+          </div>
+        </aside>
       </div>
-      <Link href="/" className="btn btn-outline">← Back to all events</Link>
     </>
   );
 }
