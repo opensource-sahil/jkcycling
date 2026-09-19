@@ -109,9 +109,9 @@ export default function TrainingPage() {
                 <span className={`badge badge--${plan.badge}`}>{plan.level}</span>
                 <h3 className={styles.planTitle}>{plan.title}</h3>
                 <div className={styles.planMeta}>
-                  <span className="mono">{plan.weeks}</span>
+                  <span className={styles.planMetaMono}>{plan.weeks}</span>
                   <span className="muted">·</span>
-                  <span className="mono">{plan.hours}</span>
+                  <span className={styles.planMetaMono}>{plan.hours}</span>
                 </div>
                 <ul className={styles.planList}>
                   {plan.items.map((item) => (
@@ -138,7 +138,9 @@ export default function TrainingPage() {
           <div className={styles.tips}>
             {TIPS.map((tip) => (
               <div className={styles.tip} key={tip.title}>
-                <div className={styles.tipIcon}>{tip.icon}</div>
+                <div className={styles.tipIcon} aria-hidden="true">
+                  {tip.icon}
+                </div>
                 <div>
                   <strong>{tip.title}</strong>
                   <p>{tip.body}</p>
