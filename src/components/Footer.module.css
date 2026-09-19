@@ -42,6 +42,8 @@
   opacity: 1;
 }
 
+/* Intentionally inherits opacity: .82 from .siteFooter a (not overridden here),
+   matching the design system's own .foot-brand .brand override (color only). */
 .footBrand .brand {
   display: inline-flex;
   align-items: center;

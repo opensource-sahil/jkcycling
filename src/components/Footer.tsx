@@ -37,13 +37,13 @@ export default function Footer() {
             <Link href="/results">Results</Link>
             <Link href="/groups">Ride groups</Link>
             <Link href="/training">Training</Link>
+            <Link href="/donate">Donate</Link>
           </div>
 
           <div>
             <h4>Community</h4>
             <a href="https://instagram.com" target="_blank" rel="noopener noreferrer">Instagram</a>
             <a href="https://facebook.com" target="_blank" rel="noopener noreferrer">Facebook</a>
-            <Link href="/donate">Donate</Link>
             <a href="mailto:contact@jkcycling.com">Contact</a>
           </div>
 
