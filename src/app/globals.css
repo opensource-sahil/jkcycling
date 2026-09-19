@@ -1,5 +1,23 @@
 @import './tokens.css';
 
+/* Temporary compatibility shim: the deferred/not-yet-restyled admin area
+ * (src/components/admin/*.module.css) still references the old --color-*
+ * variable names removed in the design-system migration. Alias them to the
+ * new tokens so admin renders correctly until it is restyled. Remove once
+ * admin is migrated to the new token names directly. */
+:root {
+  --color-bg: var(--surface);
+  --color-bg-secondary: var(--surface-sunken);
+  --color-surface: var(--surface-raised);
+  --color-text: var(--text);
+  --color-text-secondary: var(--text-muted);
+  --color-border: var(--border);
+  --color-primary: var(--primary);
+  --color-primary-dark: var(--primary-hover);
+  --color-accent: var(--accent);
+  --color-success: var(--success);
+}
+
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {

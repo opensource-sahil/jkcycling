@@ -12,7 +12,7 @@ export default async function AdminGroupsPage() {
     return (
       <div style={{ textAlign: 'center' }}>
         <h1 className={styles.pageHeading}>Access Denied</h1>
-        <Link href="/" className="btn btn-primary">Go Home</Link>
+        <Link href="/" className="btn btn--primary">Go Home</Link>
       </div>
     );
   }

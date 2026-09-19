@@ -114,7 +114,7 @@ export default function DonatePage() {
 
               <div className={styles.qr}>
                 <div className={styles.qrBox}>
-                  <QRCodeSVG value={qrValue} size={112} level="M" />
+                  <QRCodeSVG value={qrValue} size={160} level="M" />
                 </div>
                 <p className="hint">Scan with any UPI app to pay.</p>
               </div>

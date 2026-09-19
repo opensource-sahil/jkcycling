@@ -14,7 +14,7 @@ export default async function AdminDashboard() {
       <div className={styles.container} style={{ textAlign: 'center' }}>
         <h1 style={{ color: 'red', fontSize: '1.5rem', fontWeight: 'bold' }}>Access Denied</h1>
         <p style={{ marginTop: '1rem', color: 'var(--color-text-secondary)' }}>You are not authorized to view this page.</p>
-        <Link href="/" className="btn btn-primary" style={{ marginTop: '2rem' }}>Go Home</Link>
+        <Link href="/" className="btn btn--primary" style={{ marginTop: '2rem' }}>Go Home</Link>
       </div>
     );
   }
