@@ -28,6 +28,19 @@ export default async function EventPage({ params }: { params: { id: string } | P
   const hasOrganizer = Boolean(event.organizer?.name || event.organizer?.contact);
   const contact = event.organizer?.contact;
 
+  // Label for the disabled Register button — derived from the actual reason
+  // registration isn't clickable, independent of the status badge above it.
+  // (registration.isOpen can be true with no url yet, which must never read
+  // as if the working "Register to ride" link were present.)
+  const registrationDisabledLabel =
+    event.status === 'CANCELLED'
+      ? 'Registration closed'
+      : event.status === 'COMPLETED'
+      ? 'Event finished'
+      : event.registration.isOpen && !event.registration.url
+      ? 'Registration link coming soon'
+      : 'Registration closed';
+
   const formattedDate = new Date(event.date).toLocaleDateString('en-US', { dateStyle: 'long' });
   const formattedDeadline = event.registration.deadline
     ? new Date(event.registration.deadline).toLocaleDateString('en-US', { dateStyle: 'long' })
@@ -38,7 +51,7 @@ export default async function EventPage({ params }: { params: { id: string } | P
       <Link href="/" className="link">← All events</Link>
 
       <div className={styles.layout}>
-        <div className={styles.main}>
+        <div>
           <div className={styles.poster}>
             <Image src={event.image} alt={event.title} fill unoptimized style={{ objectFit: 'cover' }} />
           </div>
@@ -121,8 +134,13 @@ export default async function EventPage({ params }: { params: { id: string } | P
                 Register to ride
               </a>
             ) : (
-              <button type="button" disabled className={`btn btn--secondary btn--block btn--lg ${styles.closedBtn}`}>
-                {event.status === 'CANCELLED' ? 'Event cancelled' : badge?.label ?? 'Registration closed'}
+              <button
+                type="button"
+                disabled
+                aria-disabled={true}
+                className={`btn btn--secondary btn--block btn--lg ${styles.closedBtn}`}
+              >
+                {registrationDisabledLabel}
               </button>
             )}
 
