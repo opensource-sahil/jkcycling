@@ -1,9 +1,14 @@
 import type { Metadata } from "next";
+import { Inter, Space_Grotesk, Space_Mono } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Providers } from "./providers";
 import styles from "./layout.module.css";
+
+const inter = Inter({ subsets: ["latin"], variable: "--font-sans-src", display: "swap" });
+const grotesk = Space_Grotesk({ subsets: ["latin"], variable: "--font-display-src", display: "swap" });
+const mono = Space_Mono({ subsets: ["latin"], weight: ["400", "700"], variable: "--font-mono-src", display: "swap" });
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://jkcycling.com'),
@@ -28,7 +33,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className={`${inter.variable} ${grotesk.variable} ${mono.variable}`} suppressHydrationWarning>
       <body>
         <Providers>
           <div className={styles.shell}>
