@@ -1,62 +1,198 @@
-.header {
+.siteHeader {
   position: sticky;
   top: 0;
   z-index: 1000;
-  background-color: var(--header-bg);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid var(--color-border);
-  height: var(--header-height);
+  background: color-mix(in srgb, var(--surface-raised) 85%, transparent);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border);
+}
+
+.bar {
   display: flex;
   align-items: center;
-  transition: transform 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
+  gap: var(--space-4);
+  height: 64px;
 }
 
-.hidden {
-  transform: translateY(-100%);
-}
-
-.navContainer {
-  display: flex;
-  justify-content: space-between;
+.brand {
+  display: inline-flex;
   align-items: center;
-  width: 100%;
+  gap: var(--space-2);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 19px;
+  letter-spacing: -0.01em;
+  color: var(--text);
 }
 
-.logo {
+.mark {
+  width: 26px;
+  height: 26px;
+  color: var(--primary);
+  flex-shrink: 0;
+}
+
+/* ---------- Desktop nav ---------- */
+.nav {
+  display: none;
+  align-items: center;
+  gap: var(--space-1);
+  margin-left: var(--space-4);
+}
+
+.navLink {
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.navLink:hover {
+  background: var(--surface-hover);
+  color: var(--text);
+}
+
+.active {
+  color: var(--primary);
+  background: var(--primary-subtle);
+}
+
+/* ---------- Header actions ---------- */
+.headerActions {
+  margin-left: auto;
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  font-weight: 800;
-  font-size: 1.5rem;
-  color: var(--color-text);
-  text-decoration: none;
+  gap: var(--space-2);
 }
 
-.logoIcon {
-  color: var(--color-primary);
+.iconBtn {
+  display: inline-grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border-strong);
+  background: var(--surface-raised);
+  color: var(--text);
+  cursor: pointer;
+  flex-shrink: 0;
 }
 
-.navLinks {
+.iconBtn:hover {
+  background: var(--surface-hover);
+}
+
+.iconBtn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.menuBtn {
+  display: inline-grid;
+}
+
+.donateCta {
+  white-space: nowrap;
+}
+
+/* ---------- Auth ---------- */
+.authLoading {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-pill);
+  background: var(--surface-sunken);
+}
+
+.avatarBtn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: inline-flex;
+  border-radius: var(--radius-pill);
+  flex-shrink: 0;
+}
+
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-pill);
+  object-fit: cover;
   display: flex;
   align-items: center;
-  gap: 1.5rem;
+  justify-content: center;
+  background: var(--primary);
+  color: var(--on-primary);
+  font-weight: 700;
+  font-size: 14px;
 }
 
-/* ... existing styles ... */
+@media (min-width: 900px) {
+  .nav {
+    display: flex;
+  }
 
-@media (max-width: 640px) {
-  .logoText {
+  .menuBtn {
     display: none;
   }
-  .navLinks {
-    gap: 1rem;
-    overflow-x: auto; /* Allow horizontal scroll if needed */
-    padding-bottom: 2px; /* Space for scrollbar if it appears */
-    max-width: 100%;
-    scrollbar-width: none; /* Hide scrollbar Firefox */
-  }
-  .navLinks::-webkit-scrollbar {
-    display: none; /* Hide scrollbar Chrome/Safari */
+}
+
+/* ---------- Mobile drawer ---------- */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background: var(--overlay);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+  z-index: 1100;
+}
+
+.backdropOpen {
+  opacity: 1;
+  visibility: visible;
+}
+
+.drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(320px, 85vw);
+  background: var(--surface-raised);
+  box-shadow: var(--shadow-lg);
+  border-left: 1px solid var(--border);
+  transform: translateX(100%);
+  transition: transform 0.25s ease;
+  z-index: 1101;
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-5);
+  gap: var(--space-2);
+}
+
+.drawerOpen {
+  transform: translateX(0);
+}
+
+.drawerHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-4);
+}
+
+.drawerNav {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+@media (min-width: 900px) {
+  .backdrop,
+  .drawer {
+    display: none;
   }
 }
