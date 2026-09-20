@@ -27,7 +27,7 @@ export default function EventsList({ initialEvents }: EventsListProps) {
         <div style={{ display: 'flex', justifyContent: 'center', marginTop: '1rem' }}>
           <button 
             onClick={() => setShowAll(!showAll)}
-            className="btn btn-outline"
+            className="btn btn--secondary"
           >
             {showAll ? 'Show Less' : `Show All Upcoming (${initialEvents.length})`}
           </button>

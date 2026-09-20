@@ -27,10 +27,12 @@ export default async function GroupsPage() {
   const groups = await rideGroupService.listPublished();
   const districts = groupByDistrict(groups);
 
+  // The root layout already provides <main> and the page container.
   return (
     <>
+      <p className="eyebrow">Ride together</p>
       <h1 className={styles.pageTitle}>Ride Groups</h1>
-      <p className={styles.intro}>
+      <p className={`muted ${styles.intro}`}>
         Clubs and informal groups riding across Jammu &amp; Kashmir. Reach out
         before you turn up — most groups are happy to have new riders along,
         and it is worth checking the pace and the meeting point first.

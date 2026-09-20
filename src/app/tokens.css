@@ -1,0 +1,264 @@
+/* JK Cycling — design tokens
+ * Generated from tokens.json. Do not hand-edit; change the source and regenerate.
+ *
+ * Themes: light (Daylight), dark (Alpine Night)
+ * Switch with data-theme="dark" on <html>, or the .dark class (next-themes).
+ * For production, self-host the woff2 files and drop the @import below.
+ */
+
+/* light — Daylight */
+:root,
+[data-theme="light"],
+:root[class~="light"] {
+  --surface: #f6f8f5;  /* Page background. The base canvas behind everything. */
+  --surface-raised: #ffffff;  /* Cards, the sticky header, menus and any panel lifted off the page. */
+  --surface-sunken: #ecefe9;  /* Recessed areas: input fields, code, table stripes, wells. */
+  --surface-hover: #e9ede5;  /* Hover/pressed fill on an otherwise neutral surface (list rows, ghost buttons). */
+  --surface-inverse: #16211c;  /* High-contrast blocks such as the footer or a feature band. Pair with text-inverse. */
+  --overlay: rgba(12,21,18,0.55);  /* Scrim behind modals, drawers and the mobile menu. */
+  --border: #dde3d9;  /* Default hairline: card edges, dividers, input outlines at rest. */
+  --border-strong: #c2cabb;  /* Emphasised separation and the resting edge of interactive controls (min 3:1). */
+  --border-focus: #0e7a52;  /* The focus ring on every interactive element. Render at 2px with a 2px offset. */
+  --text: #16211c;  /* Primary body and heading text on surface / surface-raised. */
+  --text-muted: #52605a;  /* Secondary text: metadata, captions, helper copy. 4.5:1 on surface. */
+  --text-subtle: #6d7a72;  /* Tertiary text and placeholders. Non-essential only — meets 3:1, not 4.5:1. */
+  --text-inverse: #f6f8f5;  /* Text and icons on surface-inverse or a primary fill's dark counterpart. */
+  --text-link: #0c6d49;  /* Inline text links on surface. Underline on hover; never rely on colour alone. */
+  --primary: #0e7a52;  /* Brand pine green. Primary buttons, active nav, key emphasis. Pair fills with on-primary. */
+  --primary-hover: #0b6544;  /* Hover state for primary fills and links. */
+  --primary-active: #094f36;  /* Pressed/active state for primary fills. */
+  --primary-subtle: #dcf1e7;  /* Tinted brand background: selected rows, active chips, info flags. Pair with primary-subtle-text. */
+  --primary-subtle-text: #0a5c3e;  /* Text and icons sitting on primary-subtle. */
+  --on-primary: #ffffff;  /* Text/icons on a solid primary fill. Note it flips to dark ink in Alpine Night. */
+  --accent: #d9660d;  /* Summit sunrise orange. Highlights, decorative rules, the ride-with-us moments. Use as a large fill or bar — small text on it goes to accent-subtle-text. */
+  --accent-hover: #bd570a;  /* Hover state for accent fills. */
+  --accent-subtle: #fbe7d3;  /* Tinted accent background for tags and callouts. Pair with accent-subtle-text. */
+  --accent-subtle-text: #9c4a08;  /* Text and icons on accent-subtle, and accent-coloured text on surface. */
+  --on-accent: #ffffff;  /* Text on a solid accent fill — large text/labels only in Daylight (3:1). */
+  --success: #12805a;  /* Confirmation fills: subscription confirmed, registration open. */
+  --success-subtle: #d7f0e4;  /* Success background for banners and badges. Pair with success-text. */
+  --success-text: #0b6a49;  /* Success text/icons on success-subtle or on surface. */
+  --on-success: #ffffff;  /* Text on a solid success fill. */
+  --warning: #b7791f;  /* Caution fills: closing soon, weather advisory, unconfirmed. */
+  --warning-subtle: #fbeecb;  /* Warning background. Pair with warning-text. */
+  --warning-text: #8a5a12;  /* Warning text/icons on warning-subtle or on surface. */
+  --on-warning: #1a0f02;  /* Dark ink on a solid warning fill in both themes. */
+  --danger: #c0392b;  /* Destructive actions and errors: delete event, failed upload. */
+  --danger-subtle: #fbe2de;  /* Error background for form messages. Pair with danger-text. */
+  --danger-text: #a52f22;  /* Error text/icons on danger-subtle or on surface. */
+  --on-danger: #ffffff;  /* Text on a solid danger fill. */
+  --info: #1f6f9e;  /* Neutral information: alpine sky. Route notes, tips, help. */
+  --info-subtle: #dcecf6;  /* Info background. Pair with info-text. */
+  --info-text: #185a80;  /* Info text/icons on info-subtle or on surface. */
+  --on-info: #ffffff;  /* Text on a solid info fill. */
+  --podium-gold: #c8991f;  /* First place. Result cards, podium editor, the leader's row. */
+  --podium-silver: #8a8f96;  /* Second place. Decorative/large use — meets 3:1 on surface. */
+  --podium-bronze: #a5642e;  /* Third place. Decorative/large use — meets 3:1 on surface. */
+
+  --shadow-xs: 0 1px 2px rgba(16,33,26,0.06);
+  --shadow-sm: 0 1px 3px rgba(16,33,26,0.08), 0 1px 2px rgba(16,33,26,0.06);
+  --shadow-md: 0 4px 12px rgba(16,33,26,0.10), 0 2px 4px rgba(16,33,26,0.06);
+  --shadow-lg: 0 12px 28px rgba(16,33,26,0.14), 0 6px 10px rgba(16,33,26,0.08);
+}
+
+/* dark — Alpine Night */
+[data-theme="dark"],
+:root[class~="dark"] {
+  --surface: #0c1512;  /* Page background. The base canvas behind everything. */
+  --surface-raised: #131f1a;  /* Cards, the sticky header, menus and any panel lifted off the page. */
+  --surface-sunken: #08100d;  /* Recessed areas: input fields, code, table stripes, wells. */
+  --surface-hover: #1b2a24;  /* Hover/pressed fill on an otherwise neutral surface (list rows, ghost buttons). */
+  --surface-inverse: #eaf1ec;  /* High-contrast blocks such as the footer or a feature band. Pair with text-inverse. */
+  --overlay: rgba(4,10,8,0.72);  /* Scrim behind modals, drawers and the mobile menu. */
+  --border: #26362f;  /* Default hairline: card edges, dividers, input outlines at rest. */
+  --border-strong: #3a4f45;  /* Emphasised separation and the resting edge of interactive controls (min 3:1). */
+  --border-focus: #2bbd84;  /* The focus ring on every interactive element. Render at 2px with a 2px offset. */
+  --text: #eaf1ec;  /* Primary body and heading text on surface / surface-raised. */
+  --text-muted: #9db0a6;  /* Secondary text: metadata, captions, helper copy. 4.5:1 on surface. */
+  --text-subtle: #7d9188;  /* Tertiary text and placeholders. Non-essential only — meets 3:1, not 4.5:1. */
+  --text-inverse: #16211c;  /* Text and icons on surface-inverse or a primary fill's dark counterpart. */
+  --text-link: #4fd6a0;  /* Inline text links on surface. Underline on hover; never rely on colour alone. */
+  --primary: #2bbd84;  /* Brand pine green. Primary buttons, active nav, key emphasis. Pair fills with on-primary. */
+  --primary-hover: #46cf98;  /* Hover state for primary fills and links. */
+  --primary-active: #1fa471;  /* Pressed/active state for primary fills. */
+  --primary-subtle: #10281f;  /* Tinted brand background: selected rows, active chips, info flags. Pair with primary-subtle-text. */
+  --primary-subtle-text: #6fe0b3;  /* Text and icons sitting on primary-subtle. */
+  --on-primary: #04120c;  /* Text/icons on a solid primary fill. Note it flips to dark ink in Alpine Night. */
+  --accent: #f2913f;  /* Summit sunrise orange. Highlights, decorative rules, the ride-with-us moments. Use as a large fill or bar — small text on it goes to accent-subtle-text. */
+  --accent-hover: #f7a860;  /* Hover state for accent fills. */
+  --accent-subtle: #2a1a0a;  /* Tinted accent background for tags and callouts. Pair with accent-subtle-text. */
+  --accent-subtle-text: #f6ab63;  /* Text and icons on accent-subtle, and accent-coloured text on surface. */
+  --on-accent: #1a0f02;  /* Text on a solid accent fill — large text/labels only in Daylight (3:1). */
+  --success: #34c78d;  /* Confirmation fills: subscription confirmed, registration open. */
+  --success-subtle: #10281f;  /* Success background for banners and badges. Pair with success-text. */
+  --success-text: #57d6a3;  /* Success text/icons on success-subtle or on surface. */
+  --on-success: #04120c;  /* Text on a solid success fill. */
+  --warning: #e0a63a;  /* Caution fills: closing soon, weather advisory, unconfirmed. */
+  --warning-subtle: #2c2109;  /* Warning background. Pair with warning-text. */
+  --warning-text: #edc06a;  /* Warning text/icons on warning-subtle or on surface. */
+  --on-warning: #1a0f02;  /* Dark ink on a solid warning fill in both themes. */
+  --danger: #f2685a;  /* Destructive actions and errors: delete event, failed upload. */
+  --danger-subtle: #2e1512;  /* Error background for form messages. Pair with danger-text. */
+  --danger-text: #f4867a;  /* Error text/icons on danger-subtle or on surface. */
+  --on-danger: #1a0f02;  /* Text on a solid danger fill. */
+  --info: #4bb4e6;  /* Neutral information: alpine sky. Route notes, tips, help. */
+  --info-subtle: #0c2130;  /* Info background. Pair with info-text. */
+  --info-text: #6cc4ee;  /* Info text/icons on info-subtle or on surface. */
+  --on-info: #04120c;  /* Text on a solid info fill. */
+  --podium-gold: #e5b93f;  /* First place. Result cards, podium editor, the leader's row. */
+  --podium-silver: #b8bec7;  /* Second place. Decorative/large use — meets 3:1 on surface. */
+  --podium-bronze: #c68a52;  /* Third place. Decorative/large use — meets 3:1 on surface. */
+
+  --shadow-xs: 0 1px 2px rgba(0,0,0,0.5);
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.6);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.7);
+  --shadow-lg: 0 12px 28px rgba(0,0,0,0.75);
+}
+
+/* Spacing, radius, font families — the same in every theme */
+:root {
+  --font-display: var(--font-display-src), system-ui, sans-serif;
+  --font-sans: var(--font-sans-src), system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: var(--font-mono-src), ui-monospace, "SFMono-Regular", "JetBrains Mono", monospace;
+
+  --space-0\.5: 2px;  /* Hairline nudges and icon optical alignment. */
+  --space-1: 4px;  /* Base unit. Tight gaps inside a control. */
+  --space-1\.5: 6px;  /* Gap between an icon and its label. */
+  --space-2: 8px;  /* Compact padding; chip and badge insets. */
+  --space-3: 12px;  /* Default gap between related items. */
+  --space-4: 16px;  /* Standard control padding and card inner padding on mobile. */
+  --space-5: 20px;  /* Comfortable padding inside cards. */
+  --space-6: 24px;  /* Card padding on desktop; gap between cards. */
+  --space-8: 32px;  /* Gap between sub-sections. */
+  --space-10: 40px;  /* Section padding on mobile. */
+  --space-12: 48px;  /* Gap between major blocks. */
+  --space-16: 64px;  /* Vertical section rhythm on desktop. */
+  --space-20: 80px;  /* Generous section spacing. */
+  --space-24: 96px;  /* Hero and landing-section breathing room. */
+
+  --radius-xs: 4px;  /* Tags, small inputs, nested elements. */
+  --radius-sm: 8px;  /* Buttons and form fields. */
+  --radius-md: 12px;  /* Default card and panel radius. */
+  --radius-lg: 16px;  /* Large cards, media tiles, modals. */
+  --radius-xl: 24px;  /* Hero panels and feature blocks. */
+  --radius-pill: 999px;  /* Pills, chips, avatars and icon buttons. */
+}
+
+/* Type styles — apply the class, don't re-declare the font */
+
+/* Display */
+.display-2xl {
+  font-family: var(--font-display);
+  font-size: 72px;
+  line-height: 0.94;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.display-xl {
+  font-family: var(--font-display);
+  font-size: 56px;
+  line-height: 0.96;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.display-lg {
+  font-family: var(--font-display);
+  font-size: 40px;
+  line-height: 1.05;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+/* Heading */
+.h1 {
+  font-family: var(--font-display);
+  font-size: 32px;
+  line-height: 1.15;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.h2 {
+  font-family: var(--font-display);
+  font-size: 24px;
+  line-height: 1.2;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.h3 {
+  font-family: var(--font-display);
+  font-size: 19px;
+  line-height: 1.3;
+  font-weight: 600;
+}
+.h4 {
+  font-family: var(--font-display);
+  font-size: 16px;
+  line-height: 1.35;
+  font-weight: 600;
+}
+
+/* Text */
+.body-lg {
+  font-family: var(--font-sans);
+  font-size: 18px;
+  line-height: 1.6;
+  font-weight: 400;
+}
+.body {
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.6;
+  font-weight: 400;
+}
+.body-sm {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.55;
+  font-weight: 400;
+}
+.label {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.3;
+  font-weight: 600;
+}
+.caption {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  line-height: 1.4;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+.overline {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  line-height: 1.3;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+}
+
+/* Mono */
+.mono-time {
+  font-family: var(--font-mono);
+  font-size: 20px;
+  line-height: 1.2;
+  font-weight: 700;
+}
+.mono-sm {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.5;
+  font-weight: 400;
+}
+
+/* Tabular figures for race times and any aligned numerals */
+.mono-time,
+.mono-sm {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Overline is set uppercase by convention */
+.overline {
+  text-transform: uppercase;
+}
+
